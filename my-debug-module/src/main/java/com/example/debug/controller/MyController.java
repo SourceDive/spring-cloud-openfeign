@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
  * 3. 这是真正的 FeignClient 调用示例
  */
 @RestController
-public class FeignTestController {
+public class MyController {
 
     @Autowired
     private HelloClient helloClient;
@@ -68,8 +68,7 @@ public class FeignTestController {
                 "4. -> FeignTestController.hello() 处理请求\n" +
                 "5. -> 返回结果: %s\n\n" +
                 "当前服务器端口: %d\n" +
-                "FeignClient 配置的 URL: http://localhost:8080\n\n" +
-                "💡 提示：在 helloClient.getHello() 这一行打断点，可以跟踪 Feign 的完整调用过程",
+                "FeignClient 配置的 URL: http://localhost:8080\n\n",
                 result, serverPort
             );
         } catch (Exception e) {
