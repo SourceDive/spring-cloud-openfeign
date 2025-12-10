@@ -106,6 +106,7 @@
 		<module>spring-cloud-openfeign-core</module>
 		<module>spring-cloud-starter-openfeign</module>
 		<module>docs</module>
+		<module>my-debug-module</module>
     </modules>
 	<profiles>
 		<profile>

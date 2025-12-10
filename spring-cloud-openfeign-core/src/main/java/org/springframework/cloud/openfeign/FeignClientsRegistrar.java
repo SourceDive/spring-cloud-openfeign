@@ -49,6 +49,7 @@ import java.net.URL;
 import java.util.*;
 
 /**
+ * <p>feign客户端注册器。</p>
  * @author Spencer Gibb
  * @author Jakub Narloch
  * @author Venil Noronha
@@ -103,6 +104,7 @@ class FeignClientsRegistrar implements ImportBeanDefinitionRegistrar,
 
         Set<String> basePackages;
 
+        // 获取注解 @EnableFeignClients 信息。
         Map<String, Object> attrs = metadata
                 .getAnnotationAttributes(EnableFeignClients.class.getName());
         AnnotationTypeFilter annotationTypeFilter = new AnnotationTypeFilter(
