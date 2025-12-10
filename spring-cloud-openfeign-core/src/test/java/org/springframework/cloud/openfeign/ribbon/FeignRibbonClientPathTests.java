@@ -16,9 +16,8 @@
 
 package org.springframework.cloud.openfeign.ribbon;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
+import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.ServerList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +25,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
@@ -38,143 +37,149 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Venil Noronha
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest(classes = FeignRibbonClientPathTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT,value = {
-		"spring.application.name=feignribbonclientpathtest",
-		"feign.okhttp.enabled=false",
-		"feign.httpclient.enabled=false",
-		"feign.hystrix.enabled=false",
-		"test.path.prefix=/base/path" // For pathWithPlaceholder test
-	}
+@SpringBootTest(classes = FeignRibbonClientPathTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
+        "spring.application.name=feignribbonclientpathtest",
+        "feign.okhttp.enabled=false",
+        "feign.httpclient.enabled=false",
+        "feign.hystrix.enabled=false",
+        "test.path.prefix=/base/path" // For pathWithPlaceholder test
+}
 )
 @DirtiesContext
 public class FeignRibbonClientPathTests {
 
-	@Value("${local.server.port}")
-	private int port = 0;
+    @Value("${local.server.port}")
+    private int port = 0;
 
-	@Autowired
-	private TestClient1 testClient1;
+    @Autowired
+    private TestClient1 testClient1;
 
-	@Autowired
-	private TestClient2 testClient2;
+    @Autowired
+    private TestClient2 testClient2;
 
-	@Autowired
-	private TestClient3 testClient3;
+    @Autowired
+    private TestClient3 testClient3;
 
-	@Autowired
-	private TestClient4 testClient4;
-	
-	@Autowired
-	private TestClient5 testClient5;
+    @Autowired
+    private TestClient4 testClient4;
 
-	protected interface TestClient {
+    @Autowired
+    private TestClient5 testClient5;
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		Hello getHello();
+    protected interface TestClient {
 
-	}
+        @RequestMapping(method = RequestMethod.GET, value = "/hello")
+        Hello getHello();
 
-	@FeignClient(name = "localapp", path = "/base/path")
-	protected interface TestClient1 extends TestClient { }
+    }
 
-	@FeignClient(name = "localapp", path = "base/path")
-	protected interface TestClient2 extends TestClient { }
+    @FeignClient(name = "localapp", path = "/base/path")
+    protected interface TestClient1 extends TestClient {
+    }
 
-	@FeignClient(name = "localapp", path = "base/path/")
-	protected interface TestClient3 extends TestClient { }
+    @FeignClient(name = "localapp", path = "base/path")
+    protected interface TestClient2 extends TestClient {
+    }
 
-	@FeignClient(name = "localapp", path = "/base/path/")
-	protected interface TestClient4 extends TestClient { }
+    @FeignClient(name = "localapp", path = "base/path/")
+    protected interface TestClient3 extends TestClient {
+    }
 
-	@FeignClient(name = "localapp", path = "${test.path.prefix}")
-	protected interface TestClient5 extends TestClient { }
-	
-	@Configuration
-	@EnableAutoConfiguration
-	@RestController
-	@RequestMapping("/base/path")
-	@EnableFeignClients(clients = {
-		TestClient1.class, TestClient2.class, TestClient3.class, TestClient4.class,
-		TestClient5.class
-	})
-	@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
-	public static class Application {
+    @FeignClient(name = "localapp", path = "/base/path/")
+    protected interface TestClient4 extends TestClient {
+    }
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		public Hello getHello() {
-			return new Hello("hello world");
-		}
+    @FeignClient(name = "localapp", path = "${test.path.prefix}")
+    protected interface TestClient5 extends TestClient {
+    }
 
-	}
+    @Configuration
+    @EnableAutoConfiguration
+    @RestController
+    @RequestMapping("/base/path")
+    @EnableFeignClients(clients = {
+            TestClient1.class, TestClient2.class, TestClient3.class, TestClient4.class,
+            TestClient5.class
+    })
+    @RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
+    public static class Application {
 
-	@Test
-	public void pathWithLeadingButNotTrailingSlash() {
-		testClientPath(this.testClient1);
-	}
+        @RequestMapping(method = RequestMethod.GET, value = "/hello")
+        public Hello getHello() {
+            return new Hello("hello world");
+        }
 
-	@Test
-	public void pathWithoutLeadingAndTrailingSlash() {
-		testClientPath(this.testClient2);
-	}
+    }
 
-	@Test
-	public void pathWithoutLeadingButTrailingSlash() {
-		testClientPath(this.testClient3);
-	}
+    @Test
+    public void pathWithLeadingButNotTrailingSlash() {
+        testClientPath(this.testClient1);
+    }
 
-	@Test
-	public void pathWithLeadingAndTrailingSlash() {
-		testClientPath(this.testClient4);
-	}
+    @Test
+    public void pathWithoutLeadingAndTrailingSlash() {
+        testClientPath(this.testClient2);
+    }
 
-	@Test
-	public void pathWithPlaceholder() {
-		testClientPath(this.testClient5);
-	}
+    @Test
+    public void pathWithoutLeadingButTrailingSlash() {
+        testClientPath(this.testClient3);
+    }
 
-	private void testClientPath(TestClient testClient) {
-		Hello hello = testClient.getHello();
-		assertNotNull("Object returned was null", hello);
-		assertEquals("Response object value didn't match", "hello world",
-				hello.getMessage());
-	}
+    @Test
+    public void pathWithLeadingAndTrailingSlash() {
+        testClientPath(this.testClient4);
+    }
 
-	public static class Hello {
-		private String message;
+    @Test
+    public void pathWithPlaceholder() {
+        testClientPath(this.testClient5);
+    }
 
-		public Hello() {}
+    private void testClientPath(TestClient testClient) {
+        Hello hello = testClient.getHello();
+        assertNotNull("Object returned was null", hello);
+        assertEquals("Response object value didn't match", "hello world",
+                hello.getMessage());
+    }
 
-		public Hello(String message) {
-			this.message = message;
-		}
+    public static class Hello {
+        private String message;
 
-		public String getMessage() {
-			return message;
-		}
+        public Hello() {
+        }
 
-		public void setMessage(String message) {
-			this.message = message;
-		}
-	}
+        public Hello(String message) {
+            this.message = message;
+        }
 
-	@Configuration
-	public static class LocalRibbonClientConfiguration {
+        public String getMessage() {
+            return message;
+        }
 
-		@Value("${local.server.port}")
-		private int port = 0;
+        public void setMessage(String message) {
+            this.message = message;
+        }
+    }
 
-		@Bean
-		public ServerList<Server> ribbonServerList() {
-			return new StaticServerList<>(new Server("localhost", this.port));
-		}
+    @Configuration
+    public static class LocalRibbonClientConfiguration {
 
-	}
+        @Value("${local.server.port}")
+        private int port = 0;
+
+        @Bean
+        public ServerList<Server> ribbonServerList() {
+            return new StaticServerList<>(new Server("localhost", this.port));
+        }
+
+    }
 
 }

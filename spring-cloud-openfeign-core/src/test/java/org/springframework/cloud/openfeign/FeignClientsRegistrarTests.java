@@ -17,8 +17,6 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.util.Collections;
-
 import org.junit.Test;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
@@ -26,6 +24,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.env.MockEnvironment;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+
+import java.util.Collections;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -36,86 +36,86 @@ import static org.junit.Assert.assertThat;
  */
 public class FeignClientsRegistrarTests {
 
-	@Test(expected = IllegalStateException.class)
-	public void badNameHttpPrefix() {
-		testGetName("http://bad_hostname");
-	}
+    @Test(expected = IllegalStateException.class)
+    public void badNameHttpPrefix() {
+        testGetName("http://bad_hostname");
+    }
 
 
-	@Test(expected = IllegalStateException.class)
-	public void badNameHttpsPrefix() {
-		testGetName("https://bad_hostname");
-	}
+    @Test(expected = IllegalStateException.class)
+    public void badNameHttpsPrefix() {
+        testGetName("https://bad_hostname");
+    }
 
-	@Test(expected = IllegalStateException.class)
-	public void badName() {
-		testGetName("bad_hostname");
-	}
+    @Test(expected = IllegalStateException.class)
+    public void badName() {
+        testGetName("bad_hostname");
+    }
 
-	@Test(expected = IllegalStateException.class)
-	public void badNameStartsWithHttp() {
-		testGetName("http_bad_hostname");
-	}
+    @Test(expected = IllegalStateException.class)
+    public void badNameStartsWithHttp() {
+        testGetName("http_bad_hostname");
+    }
 
-	@Test
-	public void goodName() {
-		String name = testGetName("good-name");
-		assertThat("name was wrong", name, is("good-name"));
-	}
+    @Test
+    public void goodName() {
+        String name = testGetName("good-name");
+        assertThat("name was wrong", name, is("good-name"));
+    }
 
-	@Test
-	public void goodNameHttpPrefix() {
-		String name = testGetName("http://good-name");
-		assertThat("name was wrong", name, is("http://good-name"));
-	}
+    @Test
+    public void goodNameHttpPrefix() {
+        String name = testGetName("http://good-name");
+        assertThat("name was wrong", name, is("http://good-name"));
+    }
 
-	@Test
-	public void goodNameHttpsPrefix() {
-		String name = testGetName("https://goodname");
-		assertThat("name was wrong", name, is("https://goodname"));
-	}
+    @Test
+    public void goodNameHttpsPrefix() {
+        String name = testGetName("https://goodname");
+        assertThat("name was wrong", name, is("https://goodname"));
+    }
 
-	private String testGetName(String name) {
-		FeignClientsRegistrar registrar = new FeignClientsRegistrar();
-		registrar.setEnvironment(new MockEnvironment());
-		return registrar.getName(Collections.<String, Object>singletonMap("name", name));
-	}
+    private String testGetName(String name) {
+        FeignClientsRegistrar registrar = new FeignClientsRegistrar();
+        registrar.setEnvironment(new MockEnvironment());
+        return registrar.getName(Collections.<String, Object>singletonMap("name", name));
+    }
 
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testFallback() {
-		new AnnotationConfigApplicationContext(FallbackTestConfig.class);
-	}
+    @Test(expected = IllegalArgumentException.class)
+    public void testFallback() {
+        new AnnotationConfigApplicationContext(FallbackTestConfig.class);
+    }
 
-	@Test(expected = IllegalArgumentException.class)
-	public void testFallbackFactory() {
-		new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class);
-	}
+    @Test(expected = IllegalArgumentException.class)
+    public void testFallbackFactory() {
+        new AnnotationConfigApplicationContext(FallbackFactoryTestConfig.class);
+    }
 
-	@Configuration
-	@EnableAutoConfiguration
-	@EnableFeignClients(clients = { FeignClientsRegistrarTests.FallbackClient.class})
-	protected static class FallbackTestConfig {
+    @Configuration
+    @EnableAutoConfiguration
+    @EnableFeignClients(clients = {FeignClientsRegistrarTests.FallbackClient.class})
+    protected static class FallbackTestConfig {
 
-	}
+    }
 
-	@FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/", fallback = FallbackClient.class)
-	protected interface FallbackClient {
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		String fallbackTest();
-	}
+    @FeignClient(name = "fallbackTestClient", url = "http://localhost:8080/", fallback = FallbackClient.class)
+    protected interface FallbackClient {
+        @RequestMapping(method = RequestMethod.GET, value = "/hello")
+        String fallbackTest();
+    }
 
-	@Configuration
-	@EnableAutoConfiguration
-	@EnableFeignClients(clients = { FeignClientsRegistrarTests.FallbackFactoryClient.class})
-	protected static class FallbackFactoryTestConfig {
+    @Configuration
+    @EnableAutoConfiguration
+    @EnableFeignClients(clients = {FeignClientsRegistrarTests.FallbackFactoryClient.class})
+    protected static class FallbackFactoryTestConfig {
 
-	}
+    }
 
-	@FeignClient(name = "fallbackFactoryTestClient", url = "http://localhost:8081/", fallbackFactory = FallbackFactoryClient.class)
-	protected interface FallbackFactoryClient {
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		String fallbackFactoryTest();
-	}
+    @FeignClient(name = "fallbackFactoryTestClient", url = "http://localhost:8081/", fallbackFactory = FallbackFactoryClient.class)
+    protected interface FallbackFactoryClient {
+        @RequestMapping(method = RequestMethod.GET, value = "/hello")
+        String fallbackFactoryTest();
+    }
 
 }

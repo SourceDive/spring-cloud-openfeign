@@ -16,6 +16,9 @@
 
 package org.springframework.cloud.openfeign.valid.scanning;
 
+import com.netflix.loadbalancer.Server;
+import com.netflix.loadbalancer.ServerList;
+import feign.Client;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,10 +26,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.netflix.ribbon.StaticServerList;
+import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
@@ -34,11 +37,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerList;
-
-import feign.Client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,73 +46,73 @@ import static org.junit.Assert.assertNotNull;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientScanningTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"spring.application.name=feignclienttest", "feign.httpclient.enabled=false" })
+        "spring.application.name=feignclienttest", "feign.httpclient.enabled=false"})
 @DirtiesContext
 public class FeignClientScanningTests {
 
-	@Value("${local.server.port}")
-	private int port = 0;
+    @Value("${local.server.port}")
+    private int port = 0;
 
-	@Autowired
-	private TestClient testClient;
+    @Autowired
+    private TestClient testClient;
 
-	@Autowired
-	private TestClientByKey testClientByKey;
+    @Autowired
+    private TestClientByKey testClientByKey;
 
-	@Autowired
-	@SuppressWarnings("unused")
-	private Client feignClient;
+    @Autowired
+    @SuppressWarnings("unused")
+    private Client feignClient;
 
-	@FeignClient("localapp")
-	protected interface TestClient {
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		String getHello();
-	}
+    @FeignClient("localapp")
+    protected interface TestClient {
+        @RequestMapping(method = RequestMethod.GET, value = "/hello")
+        String getHello();
+    }
 
-	@FeignClient("${feignClient.localappName}")
-	protected interface TestClientByKey {
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		String getHello();
-	}
+    @FeignClient("${feignClient.localappName}")
+    protected interface TestClientByKey {
+        @RequestMapping(method = RequestMethod.GET, value = "/hello")
+        String getHello();
+    }
 
-	@Configuration
-	@EnableAutoConfiguration
-	@RestController
-	@EnableFeignClients // NO clients attribute. That's what this class is testing!
-	@RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
-	protected static class Application {
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		public String getHello() {
-			return "hello world 1";
-		}
+    @Configuration
+    @EnableAutoConfiguration
+    @RestController
+    @EnableFeignClients // NO clients attribute. That's what this class is testing!
+    @RibbonClient(name = "localapp", configuration = LocalRibbonClientConfiguration.class)
+    protected static class Application {
+        @RequestMapping(method = RequestMethod.GET, value = "/hello")
+        public String getHello() {
+            return "hello world 1";
+        }
 
-	}
+    }
 
-	@Test
-	public void testSimpleType() {
-		String hello = this.testClient.getHello();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", "hello world 1", hello);
-	}
+    @Test
+    public void testSimpleType() {
+        String hello = this.testClient.getHello();
+        assertNotNull("hello was null", hello);
+        assertEquals("first hello didn't match", "hello world 1", hello);
+    }
 
-	@Test
-	public void testSimpleTypeByKey() {
-		String hello = this.testClientByKey.getHello();
-		assertNotNull("hello was null", hello);
-		assertEquals("first hello didn't match", "hello world 1", hello);
-	}
+    @Test
+    public void testSimpleTypeByKey() {
+        String hello = this.testClientByKey.getHello();
+        assertNotNull("hello was null", hello);
+        assertEquals("first hello didn't match", "hello world 1", hello);
+    }
 
-	// Load balancer with fixed server list for "local" pointing to localhost
-	@Configuration
-	public static class LocalRibbonClientConfiguration {
+    // Load balancer with fixed server list for "local" pointing to localhost
+    @Configuration
+    public static class LocalRibbonClientConfiguration {
 
-		@Value("${local.server.port}")
-		private int port = 0;
+        @Value("${local.server.port}")
+        private int port = 0;
 
-		@Bean
-		public ServerList<Server> ribbonServerList() {
-			return new StaticServerList<>(new Server("localhost", this.port));
-		}
+        @Bean
+        public ServerList<Server> ribbonServerList() {
+            return new StaticServerList<>(new Server("localhost", this.port));
+        }
 
-	}
+    }
 }

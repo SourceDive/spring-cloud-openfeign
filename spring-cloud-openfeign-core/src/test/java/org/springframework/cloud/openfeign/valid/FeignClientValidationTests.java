@@ -19,11 +19,11 @@ package org.springframework.cloud.openfeign.valid;
 import org.junit.Test;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
+import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
-import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -37,73 +37,73 @@ import static org.junit.Assert.assertNotNull;
  */
 public class FeignClientValidationTests {
 
-	@Test
-	public void validNotLoadBalanced() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				GoodUrlConfiguration.class);
-		assertNotNull(context.getBean(GoodUrlConfiguration.Client.class));
-		context.close();
-	}
+    @Test
+    public void validNotLoadBalanced() {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                GoodUrlConfiguration.class);
+        assertNotNull(context.getBean(GoodUrlConfiguration.Client.class));
+        context.close();
+    }
 
-	@Configuration
-	@Import({FeignAutoConfiguration.class, HttpClientConfiguration.class})
-	@EnableFeignClients(clients = GoodUrlConfiguration.Client.class)
-	protected static class GoodUrlConfiguration {
+    @Configuration
+    @Import({FeignAutoConfiguration.class, HttpClientConfiguration.class})
+    @EnableFeignClients(clients = GoodUrlConfiguration.Client.class)
+    protected static class GoodUrlConfiguration {
 
-		@FeignClient(name="example", url="http://example.com")
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			@Deprecated
-			String get();
-		}
+        @FeignClient(name = "example", url = "http://example.com")
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            @Deprecated
+            String get();
+        }
 
-	}
+    }
 
-	@Test
-	public void validPlaceholder() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				PlaceholderUrlConfiguration.class);
-		assertNotNull(context.getBean(PlaceholderUrlConfiguration.Client.class));
-		context.close();
-	}
+    @Test
+    public void validPlaceholder() {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                PlaceholderUrlConfiguration.class);
+        assertNotNull(context.getBean(PlaceholderUrlConfiguration.Client.class));
+        context.close();
+    }
 
-	@Configuration
-	@Import({FeignAutoConfiguration.class, HttpClientConfiguration.class})
-	@EnableFeignClients(clients = PlaceholderUrlConfiguration.Client.class)
-	protected static class PlaceholderUrlConfiguration {
+    @Configuration
+    @Import({FeignAutoConfiguration.class, HttpClientConfiguration.class})
+    @EnableFeignClients(clients = PlaceholderUrlConfiguration.Client.class)
+    protected static class PlaceholderUrlConfiguration {
 
-		@FeignClient(name="example", url="${feignClient.url:http://example.com}")
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			@Deprecated
-			String get();
-		}
+        @FeignClient(name = "example", url = "${feignClient.url:http://example.com}")
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            @Deprecated
+            String get();
+        }
 
-	}
+    }
 
-	@Test
-	public void validLoadBalanced() {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				LoadBalancerAutoConfiguration.class,
-				RibbonAutoConfiguration.class,
-				FeignRibbonClientAutoConfiguration.class,
-				GoodServiceIdConfiguration.class);
-		assertNotNull(context.getBean(GoodServiceIdConfiguration.Client.class));
-		context.close();
-	}
+    @Test
+    public void validLoadBalanced() {
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                LoadBalancerAutoConfiguration.class,
+                RibbonAutoConfiguration.class,
+                FeignRibbonClientAutoConfiguration.class,
+                GoodServiceIdConfiguration.class);
+        assertNotNull(context.getBean(GoodServiceIdConfiguration.Client.class));
+        context.close();
+    }
 
-	@Configuration
-	@Import({FeignAutoConfiguration.class, HttpClientConfiguration.class})
-	@EnableFeignClients(clients = GoodServiceIdConfiguration.Client.class)
-	protected static class GoodServiceIdConfiguration {
+    @Configuration
+    @Import({FeignAutoConfiguration.class, HttpClientConfiguration.class})
+    @EnableFeignClients(clients = GoodServiceIdConfiguration.Client.class)
+    protected static class GoodServiceIdConfiguration {
 
-		@FeignClient("foo")
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			@Deprecated
-			String get();
-		}
+        @FeignClient("foo")
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            @Deprecated
+            String get();
+        }
 
-	}
+    }
 
 }

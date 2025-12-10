@@ -19,7 +19,6 @@ package org.springframework.cloud.openfeign.invalid;
 import feign.Feign;
 import feign.hystrix.FallbackFactory;
 import feign.hystrix.HystrixFeign;
-
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -40,244 +39,244 @@ import static org.junit.Assert.assertNotNull;
  */
 public class FeignClientValidationTests {
 
-	@Rule
-	public ExpectedException expected = ExpectedException.none();
+    @Rule
+    public ExpectedException expected = ExpectedException.none();
 
-	@Test
-	public void testNameAndValue() {
-		this.expected.expectMessage("only one is permitted");
-		new AnnotationConfigApplicationContext(NameAndValueConfiguration.class);
-	}
+    @Test
+    public void testNameAndValue() {
+        this.expected.expectMessage("only one is permitted");
+        new AnnotationConfigApplicationContext(NameAndValueConfiguration.class);
+    }
 
-	@Configuration
-	@Import(FeignAutoConfiguration.class)
-	@EnableFeignClients(clients = NameAndValueConfiguration.Client.class)
-	protected static class NameAndValueConfiguration {
+    @Configuration
+    @Import(FeignAutoConfiguration.class)
+    @EnableFeignClients(clients = NameAndValueConfiguration.Client.class)
+    protected static class NameAndValueConfiguration {
 
-		@FeignClient(value = "foo", name = "bar")
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
-		}
+        @FeignClient(value = "foo", name = "bar")
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            String get();
+        }
 
-	}
+    }
 
-	@Test
-	public void testServiceIdAndValue() {
-		this.expected.expectMessage("only one is permitted");
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				NameAndValueConfiguration.class);
-		assertNotNull(context.getBean(NameAndServiceIdConfiguration.Client.class));
-		context.close();
-	}
+    @Test
+    public void testServiceIdAndValue() {
+        this.expected.expectMessage("only one is permitted");
+        AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                NameAndValueConfiguration.class);
+        assertNotNull(context.getBean(NameAndServiceIdConfiguration.Client.class));
+        context.close();
+    }
 
-	@Configuration
-	@Import(FeignAutoConfiguration.class)
-	@EnableFeignClients(clients = NameAndServiceIdConfiguration.Client.class)
-	protected static class NameAndServiceIdConfiguration {
+    @Configuration
+    @Import(FeignAutoConfiguration.class)
+    @EnableFeignClients(clients = NameAndServiceIdConfiguration.Client.class)
+    protected static class NameAndServiceIdConfiguration {
 
-		@FeignClient(serviceId = "foo", name = "bar")
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
-		}
+        @FeignClient(serviceId = "foo", name = "bar")
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            String get();
+        }
 
-	}
+    }
 
-	@Test
-	public void testNotLegalHostname() {
-		this.expected.expectMessage("not legal hostname (foo_bar)");
-		new AnnotationConfigApplicationContext(BadHostnameConfiguration.class);
-	}
+    @Test
+    public void testNotLegalHostname() {
+        this.expected.expectMessage("not legal hostname (foo_bar)");
+        new AnnotationConfigApplicationContext(BadHostnameConfiguration.class);
+    }
 
-	@Configuration
-	@Import(FeignAutoConfiguration.class)
-	@EnableFeignClients(clients = BadHostnameConfiguration.Client.class)
-	protected static class BadHostnameConfiguration {
+    @Configuration
+    @Import(FeignAutoConfiguration.class)
+    @EnableFeignClients(clients = BadHostnameConfiguration.Client.class)
+    protected static class BadHostnameConfiguration {
 
-		@FeignClient("foo_bar")
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
-		}
+        @FeignClient("foo_bar")
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            String get();
+        }
 
-	}
+    }
 
-	@Test
-	public void testMissingFallback() {
-		try (
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				MissingFallbackConfiguration.class)) {
-			this.expected.expectMessage("No fallback instance of type");
-			assertNotNull(context.getBean(MissingFallbackConfiguration.Client.class));
-		}
-	}
+    @Test
+    public void testMissingFallback() {
+        try (
+                AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                        MissingFallbackConfiguration.class)) {
+            this.expected.expectMessage("No fallback instance of type");
+            assertNotNull(context.getBean(MissingFallbackConfiguration.Client.class));
+        }
+    }
 
-	@Configuration
-	@Import(FeignAutoConfiguration.class)
-	@EnableFeignClients(clients = MissingFallbackConfiguration.Client.class)
-	protected static class MissingFallbackConfiguration {
+    @Configuration
+    @Import(FeignAutoConfiguration.class)
+    @EnableFeignClients(clients = MissingFallbackConfiguration.Client.class)
+    protected static class MissingFallbackConfiguration {
 
-		@FeignClient(name = "foobar", url = "http://localhost", fallback = ClientFallback.class)
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
-		}
+        @FeignClient(name = "foobar", url = "http://localhost", fallback = ClientFallback.class)
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            String get();
+        }
 
-		class ClientFallback implements Client {
-			@Override
-			public String get() {
-				return null;
-			}
-		}
+        class ClientFallback implements Client {
+            @Override
+            public String get() {
+                return null;
+            }
+        }
 
-		@Bean
-		public Feign.Builder feignBuilder() {
-			return HystrixFeign.builder();
-		}
-	}
+        @Bean
+        public Feign.Builder feignBuilder() {
+            return HystrixFeign.builder();
+        }
+    }
 
-	@Test
-	public void testWrongFallbackType() {
-		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-				WrongFallbackTypeConfiguration.class)) {
-			this.expected.expectMessage("Incompatible fallback instance");
-			assertNotNull(context.getBean(WrongFallbackTypeConfiguration.Client.class));
-		}
-	}
+    @Test
+    public void testWrongFallbackType() {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                WrongFallbackTypeConfiguration.class)) {
+            this.expected.expectMessage("Incompatible fallback instance");
+            assertNotNull(context.getBean(WrongFallbackTypeConfiguration.Client.class));
+        }
+    }
 
-	@Configuration
-	@Import(FeignAutoConfiguration.class)
-	@EnableFeignClients(clients = WrongFallbackTypeConfiguration.Client.class)
-	protected static class WrongFallbackTypeConfiguration {
+    @Configuration
+    @Import(FeignAutoConfiguration.class)
+    @EnableFeignClients(clients = WrongFallbackTypeConfiguration.Client.class)
+    protected static class WrongFallbackTypeConfiguration {
 
-		@FeignClient(name = "foobar", url = "http://localhost", fallback = Dummy.class)
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
-		}
+        @FeignClient(name = "foobar", url = "http://localhost", fallback = Dummy.class)
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            String get();
+        }
 
-		@Bean
-		Dummy dummy() {
-			return new Dummy();
-		}
+        @Bean
+        Dummy dummy() {
+            return new Dummy();
+        }
 
-		class Dummy {
-		}
+        class Dummy {
+        }
 
-		@Bean
-		public Feign.Builder feignBuilder() {
-			return HystrixFeign.builder();
-		}
+        @Bean
+        public Feign.Builder feignBuilder() {
+            return HystrixFeign.builder();
+        }
 
-	}
+    }
 
-	@Test
-	public void testMissingFallbackFactory() {
-		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-			MissingFallbackFactoryConfiguration.class)) {
-			this.expected.expectMessage("No fallbackFactory instance of type");
-			assertNotNull(context.getBean(MissingFallbackFactoryConfiguration.Client.class));
-		}
-	}
+    @Test
+    public void testMissingFallbackFactory() {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                MissingFallbackFactoryConfiguration.class)) {
+            this.expected.expectMessage("No fallbackFactory instance of type");
+            assertNotNull(context.getBean(MissingFallbackFactoryConfiguration.Client.class));
+        }
+    }
 
-	@Configuration
-	@Import(FeignAutoConfiguration.class)
-	@EnableFeignClients(clients = MissingFallbackFactoryConfiguration.Client.class)
-	protected static class MissingFallbackFactoryConfiguration {
+    @Configuration
+    @Import(FeignAutoConfiguration.class)
+    @EnableFeignClients(clients = MissingFallbackFactoryConfiguration.Client.class)
+    protected static class MissingFallbackFactoryConfiguration {
 
-		@FeignClient(name = "foobar", url = "http://localhost", fallbackFactory = ClientFallback.class)
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
-		}
+        @FeignClient(name = "foobar", url = "http://localhost", fallbackFactory = ClientFallback.class)
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            String get();
+        }
 
-		class ClientFallback implements FallbackFactory<Client> {
+        class ClientFallback implements FallbackFactory<Client> {
 
-			@Override
-			public Client create(Throwable cause) {
-				return null;
-			}
-		}
+            @Override
+            public Client create(Throwable cause) {
+                return null;
+            }
+        }
 
-		@Bean
-		public Feign.Builder feignBuilder() {
-			return HystrixFeign.builder();
-		}
-	}
+        @Bean
+        public Feign.Builder feignBuilder() {
+            return HystrixFeign.builder();
+        }
+    }
 
-	@Test
-	public void testWrongFallbackFactoryType() {
-		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-			WrongFallbackFactoryTypeConfiguration.class)) {
-			this.expected.expectMessage("Incompatible fallbackFactory instance");
-			assertNotNull(context.getBean(WrongFallbackFactoryTypeConfiguration.Client.class));
-		}
-	}
+    @Test
+    public void testWrongFallbackFactoryType() {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                WrongFallbackFactoryTypeConfiguration.class)) {
+            this.expected.expectMessage("Incompatible fallbackFactory instance");
+            assertNotNull(context.getBean(WrongFallbackFactoryTypeConfiguration.Client.class));
+        }
+    }
 
-	@Configuration
-	@Import(FeignAutoConfiguration.class)
-	@EnableFeignClients(clients = WrongFallbackFactoryTypeConfiguration.Client.class)
-	protected static class WrongFallbackFactoryTypeConfiguration {
+    @Configuration
+    @Import(FeignAutoConfiguration.class)
+    @EnableFeignClients(clients = WrongFallbackFactoryTypeConfiguration.Client.class)
+    protected static class WrongFallbackFactoryTypeConfiguration {
 
-		@FeignClient(name = "foobar", url = "http://localhost", fallbackFactory = Dummy.class)
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
-		}
+        @FeignClient(name = "foobar", url = "http://localhost", fallbackFactory = Dummy.class)
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            String get();
+        }
 
-		@Bean
-		Dummy dummy() {
-			return new Dummy();
-		}
+        @Bean
+        Dummy dummy() {
+            return new Dummy();
+        }
 
-		class Dummy {
-		}
+        class Dummy {
+        }
 
-		@Bean
-		public Feign.Builder feignBuilder() {
-			return HystrixFeign.builder();
-		}
+        @Bean
+        public Feign.Builder feignBuilder() {
+            return HystrixFeign.builder();
+        }
 
-	}
+    }
 
-	@Test
-	public void testWrongFallbackFactoryGenericType() {
-		try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
-			WrongFallbackFactoryGenericTypeConfiguration.class)) {
-			this.expected.expectMessage("Incompatible fallbackFactory instance");
-			assertNotNull(context.getBean(WrongFallbackFactoryGenericTypeConfiguration.Client.class));
-		}
-	}
+    @Test
+    public void testWrongFallbackFactoryGenericType() {
+        try (AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(
+                WrongFallbackFactoryGenericTypeConfiguration.class)) {
+            this.expected.expectMessage("Incompatible fallbackFactory instance");
+            assertNotNull(context.getBean(WrongFallbackFactoryGenericTypeConfiguration.Client.class));
+        }
+    }
 
-	@Configuration
-	@Import(FeignAutoConfiguration.class)
-	@EnableFeignClients(clients = WrongFallbackFactoryGenericTypeConfiguration.Client.class)
-	protected static class WrongFallbackFactoryGenericTypeConfiguration {
+    @Configuration
+    @Import(FeignAutoConfiguration.class)
+    @EnableFeignClients(clients = WrongFallbackFactoryGenericTypeConfiguration.Client.class)
+    protected static class WrongFallbackFactoryGenericTypeConfiguration {
 
-		@FeignClient(name = "foobar", url = "http://localhost", fallbackFactory = ClientFallback.class)
-		interface Client {
-			@RequestMapping(method = RequestMethod.GET, value = "/")
-			String get();
-		}
+        @FeignClient(name = "foobar", url = "http://localhost", fallbackFactory = ClientFallback.class)
+        interface Client {
+            @RequestMapping(method = RequestMethod.GET, value = "/")
+            String get();
+        }
 
-		@Bean
-		ClientFallback dummy() {
-			return new ClientFallback();
-		}
+        @Bean
+        ClientFallback dummy() {
+            return new ClientFallback();
+        }
 
-		class ClientFallback implements FallbackFactory<String> {
+        class ClientFallback implements FallbackFactory<String> {
 
-			@Override
-			public String create(Throwable cause) {
-				return "tryinToTrickYa";
-			}
-		}
+            @Override
+            public String create(Throwable cause) {
+                return "tryinToTrickYa";
+            }
+        }
 
-		@Bean
-		public Feign.Builder feignBuilder() {
-			return HystrixFeign.builder();
-		}
+        @Bean
+        public Feign.Builder feignBuilder() {
+            return HystrixFeign.builder();
+        }
 
-	}
+    }
 }

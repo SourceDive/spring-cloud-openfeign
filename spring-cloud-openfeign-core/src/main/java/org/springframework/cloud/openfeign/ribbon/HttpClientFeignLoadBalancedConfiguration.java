@@ -19,10 +19,6 @@ package org.springframework.cloud.openfeign.ribbon;
 
 import feign.Client;
 import feign.httpclient.ApacheHttpClient;
-
-import java.util.Timer;
-import java.util.TimerTask;
-import javax.annotation.PreDestroy;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.RegistryBuilder;
@@ -35,10 +31,14 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientConnectionManagerFactory;
 import org.springframework.cloud.commons.httpclient.ApacheHttpClientFactory;
-import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
+import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PreDestroy;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * @author Spencer Gibb
@@ -48,81 +48,81 @@ import org.springframework.context.annotation.Configuration;
 @ConditionalOnProperty(value = "feign.httpclient.enabled", matchIfMissing = true)
 class HttpClientFeignLoadBalancedConfiguration {
 
-	@Configuration
-	@ConditionalOnMissingBean(CloseableHttpClient.class)
-	protected static class HttpClientFeignConfiguration {
-		private final Timer connectionManagerTimer = new Timer(
-				"FeignApacheHttpClientConfiguration.connectionManagerTimer", true);
+    @Configuration
+    @ConditionalOnMissingBean(CloseableHttpClient.class)
+    protected static class HttpClientFeignConfiguration {
+        private final Timer connectionManagerTimer = new Timer(
+                "FeignApacheHttpClientConfiguration.connectionManagerTimer", true);
 
-		private CloseableHttpClient httpClient;
+        private CloseableHttpClient httpClient;
 
-		@Autowired(required = false)
-		private RegistryBuilder registryBuilder;
+        @Autowired(required = false)
+        private RegistryBuilder registryBuilder;
 
-		@Bean
-		@ConditionalOnMissingBean(HttpClientConnectionManager.class)
-		public HttpClientConnectionManager connectionManager(
-				ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
-				FeignHttpClientProperties httpClientProperties) {
-			final HttpClientConnectionManager connectionManager = connectionManagerFactory
-					.newConnectionManager(httpClientProperties.isDisableSslValidation(), httpClientProperties.getMaxConnections(),
-							httpClientProperties.getMaxConnectionsPerRoute(),
-							httpClientProperties.getTimeToLive(),
-							httpClientProperties.getTimeToLiveUnit(), registryBuilder);
-			this.connectionManagerTimer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					connectionManager.closeExpiredConnections();
-				}
-			}, 30000, httpClientProperties.getConnectionTimerRepeat());
-			return connectionManager;
-		}
+        @Bean
+        @ConditionalOnMissingBean(HttpClientConnectionManager.class)
+        public HttpClientConnectionManager connectionManager(
+                ApacheHttpClientConnectionManagerFactory connectionManagerFactory,
+                FeignHttpClientProperties httpClientProperties) {
+            final HttpClientConnectionManager connectionManager = connectionManagerFactory
+                    .newConnectionManager(httpClientProperties.isDisableSslValidation(), httpClientProperties.getMaxConnections(),
+                            httpClientProperties.getMaxConnectionsPerRoute(),
+                            httpClientProperties.getTimeToLive(),
+                            httpClientProperties.getTimeToLiveUnit(), registryBuilder);
+            this.connectionManagerTimer.schedule(new TimerTask() {
+                @Override
+                public void run() {
+                    connectionManager.closeExpiredConnections();
+                }
+            }, 30000, httpClientProperties.getConnectionTimerRepeat());
+            return connectionManager;
+        }
 
-		@Bean
-		@ConditionalOnProperty(value = "feign.compression.response.enabled", havingValue = "true")
-		public CloseableHttpClient customHttpClient(HttpClientConnectionManager httpClientConnectionManager,
-											  FeignHttpClientProperties httpClientProperties) {
-			HttpClientBuilder builder = HttpClientBuilder.create().disableCookieManagement().useSystemProperties();
-			this.httpClient = createClient(builder, httpClientConnectionManager, httpClientProperties);
-			return this.httpClient;
-		}
+        @Bean
+        @ConditionalOnProperty(value = "feign.compression.response.enabled", havingValue = "true")
+        public CloseableHttpClient customHttpClient(HttpClientConnectionManager httpClientConnectionManager,
+                                                    FeignHttpClientProperties httpClientProperties) {
+            HttpClientBuilder builder = HttpClientBuilder.create().disableCookieManagement().useSystemProperties();
+            this.httpClient = createClient(builder, httpClientConnectionManager, httpClientProperties);
+            return this.httpClient;
+        }
 
-		@Bean
-		@ConditionalOnProperty(value = "feign.compression.response.enabled", havingValue = "false", matchIfMissing = true)
-		public CloseableHttpClient httpClient(ApacheHttpClientFactory httpClientFactory, HttpClientConnectionManager httpClientConnectionManager,
-											  FeignHttpClientProperties httpClientProperties) {
-			this.httpClient = createClient(httpClientFactory.createBuilder(), httpClientConnectionManager, httpClientProperties);
-			return this.httpClient;
-		}
+        @Bean
+        @ConditionalOnProperty(value = "feign.compression.response.enabled", havingValue = "false", matchIfMissing = true)
+        public CloseableHttpClient httpClient(ApacheHttpClientFactory httpClientFactory, HttpClientConnectionManager httpClientConnectionManager,
+                                              FeignHttpClientProperties httpClientProperties) {
+            this.httpClient = createClient(httpClientFactory.createBuilder(), httpClientConnectionManager, httpClientProperties);
+            return this.httpClient;
+        }
 
-		private CloseableHttpClient createClient(HttpClientBuilder builder, HttpClientConnectionManager httpClientConnectionManager,
-												 FeignHttpClientProperties httpClientProperties) {
-			RequestConfig defaultRequestConfig = RequestConfig.custom()
-					.setConnectTimeout(httpClientProperties.getConnectionTimeout())
-					.setRedirectsEnabled(httpClientProperties.isFollowRedirects())
-					.build();
-			CloseableHttpClient httpClient = builder.setDefaultRequestConfig(defaultRequestConfig).
-					setConnectionManager(httpClientConnectionManager).build();
-			return httpClient;
-		}
+        private CloseableHttpClient createClient(HttpClientBuilder builder, HttpClientConnectionManager httpClientConnectionManager,
+                                                 FeignHttpClientProperties httpClientProperties) {
+            RequestConfig defaultRequestConfig = RequestConfig.custom()
+                    .setConnectTimeout(httpClientProperties.getConnectionTimeout())
+                    .setRedirectsEnabled(httpClientProperties.isFollowRedirects())
+                    .build();
+            CloseableHttpClient httpClient = builder.setDefaultRequestConfig(defaultRequestConfig).
+                    setConnectionManager(httpClientConnectionManager).build();
+            return httpClient;
+        }
 
-		@PreDestroy
-		public void destroy() throws Exception {
-			connectionManagerTimer.cancel();
-			if(httpClient != null) {
-				httpClient.close();
-			}
-		}
-	}
+        @PreDestroy
+        public void destroy() throws Exception {
+            connectionManagerTimer.cancel();
+            if (httpClient != null) {
+                httpClient.close();
+            }
+        }
+    }
 
 
-		@Bean
-		@ConditionalOnMissingBean(Client.class)
-		public Client feignClient(CachingSpringLoadBalancerFactory cachingFactory,
-								  SpringClientFactory clientFactory, HttpClient httpClient) {
-			ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
-			return new LoadBalancerFeignClient(delegate, cachingFactory, clientFactory);
-		}
+    @Bean
+    @ConditionalOnMissingBean(Client.class)
+    public Client feignClient(CachingSpringLoadBalancerFactory cachingFactory,
+                              SpringClientFactory clientFactory, HttpClient httpClient) {
+        ApacheHttpClient delegate = new ApacheHttpClient(httpClient);
+        return new LoadBalancerFeignClient(delegate, cachingFactory, clientFactory);
+    }
 
 
 }

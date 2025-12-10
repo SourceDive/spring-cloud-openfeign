@@ -30,14 +30,14 @@ import java.util.Locale;
  */
 final class Invoices {
 
-	public static List<Invoice> createInvoiceList(int count) {
-		final List<Invoice> invoices = new ArrayList<>();
-		for (int ind = 0; ind < count; ind++) {
-			final Invoice invoice = new Invoice();
-			invoice.setTitle("Invoice " + (ind + 1));
-			invoice.setAmount(new BigDecimal(String.format(Locale.US, "%.2f", Math.random() * 1000)));
-			invoices.add(invoice);
-		}
-		return invoices;
-	}
+    public static List<Invoice> createInvoiceList(int count) {
+        final List<Invoice> invoices = new ArrayList<>();
+        for (int ind = 0; ind < count; ind++) {
+            final Invoice invoice = new Invoice();
+            invoice.setTitle("Invoice " + (ind + 1));
+            invoice.setAmount(new BigDecimal(String.format(Locale.US, "%.2f", Math.random() * 1000)));
+            invoices.add(invoice);
+        }
+        return invoices;
+    }
 }

@@ -23,6 +23,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @FeignClient(value = "localapp")
 public interface TestClient {
-	@RequestMapping(method = RequestMethod.GET, value = "/hello")
-	Hello getHello();
+    @RequestMapping(method = RequestMethod.GET, value = "/hello")
+    Hello getHello();
 }

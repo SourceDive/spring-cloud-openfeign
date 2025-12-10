@@ -16,30 +16,29 @@
 package org.springframework.cloud.openfeign.ribbon;
 
 import feign.Response;
+import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.net.URI;
-import org.springframework.cloud.client.loadbalancer.RetryableStatusCodeException;
-import org.springframework.util.StreamUtils;
 
 /**
  * A {@link RetryableStatusCodeException} for {@link Response}s
+ *
  * @author Ryan Baxter
  */
 public class RibbonResponseStatusCodeException extends RetryableStatusCodeException {
-	private Response response;
+    private Response response;
 
-	public RibbonResponseStatusCodeException(String serviceId, Response response, byte[] body, URI uri) {
-		super(serviceId, response.status(), response, uri);
-		this.response = Response.builder().body(new ByteArrayInputStream(body), body.length)
-				.headers(response.headers()).reason(response.reason())
-				.status(response.status()).request(response.request()).build();
-	}
+    public RibbonResponseStatusCodeException(String serviceId, Response response, byte[] body, URI uri) {
+        super(serviceId, response.status(), response, uri);
+        this.response = Response.builder().body(new ByteArrayInputStream(body), body.length)
+                .headers(response.headers()).reason(response.reason())
+                .status(response.status()).request(response.request()).build();
+    }
 
-	@Override
-	public Response getResponse() {
-		return response;
-	}
+    @Override
+    public Response getResponse() {
+        return response;
+    }
 
 }

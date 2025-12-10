@@ -19,11 +19,7 @@ package org.springframework.cloud.openfeign.ribbon;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.AbstractLoadBalancer;
-import com.netflix.loadbalancer.ILoadBalancer;
-import com.netflix.loadbalancer.LoadBalancerStats;
-import com.netflix.loadbalancer.Server;
-import com.netflix.loadbalancer.ServerStats;
+import com.netflix.loadbalancer.*;
 import feign.Client;
 import feign.Request;
 import feign.Request.Options;
@@ -45,81 +41,81 @@ import static org.mockito.Mockito.when;
  */
 public class FeignRibbonClientTests {
 
-	private AbstractLoadBalancer loadBalancer = mock(AbstractLoadBalancer.class);
-	private Client delegate = mock(Client.class);
+    private AbstractLoadBalancer loadBalancer = mock(AbstractLoadBalancer.class);
+    private Client delegate = mock(Client.class);
 
-	private SpringClientFactory factory = new SpringClientFactory() {
-		@Override
-		public IClientConfig getClientConfig(String name) {
-			DefaultClientConfigImpl config = new DefaultClientConfigImpl();
-			config.set(CommonClientConfigKey.ConnectTimeout, 1000);
-			config.set(CommonClientConfigKey.ReadTimeout, 500);
-			return config;
-		}
+    private SpringClientFactory factory = new SpringClientFactory() {
+        @Override
+        public IClientConfig getClientConfig(String name) {
+            DefaultClientConfigImpl config = new DefaultClientConfigImpl();
+            config.set(CommonClientConfigKey.ConnectTimeout, 1000);
+            config.set(CommonClientConfigKey.ReadTimeout, 500);
+            return config;
+        }
 
-		@Override
-		public <C> C getInstance(String name, Class<C> type) {
-			if (type.isAssignableFrom(ServerIntrospector.class)) {
-				@SuppressWarnings("unchecked")
-				C instance = (C) new DefaultServerIntrospector();
-				return instance;
-			}
-			return null;
-		}
+        @Override
+        public <C> C getInstance(String name, Class<C> type) {
+            if (type.isAssignableFrom(ServerIntrospector.class)) {
+                @SuppressWarnings("unchecked")
+                C instance = (C) new DefaultServerIntrospector();
+                return instance;
+            }
+            return null;
+        }
 
-		@Override
-		public ILoadBalancer getLoadBalancer(String name) {
-			return FeignRibbonClientTests.this.loadBalancer;
-		}
-	};
+        @Override
+        public ILoadBalancer getLoadBalancer(String name) {
+            return FeignRibbonClientTests.this.loadBalancer;
+        }
+    };
 
-	// Even though we don't maintain FeignRibbonClient, keep these tests
-	// around to make sure the expected behaviour doesn't break
-	private Client client = new LoadBalancerFeignClient(this.delegate, new CachingSpringLoadBalancerFactory(this.factory), this.factory);
+    // Even though we don't maintain FeignRibbonClient, keep these tests
+    // around to make sure the expected behaviour doesn't break
+    private Client client = new LoadBalancerFeignClient(this.delegate, new CachingSpringLoadBalancerFactory(this.factory), this.factory);
 
-	@Before
-	public void init() {
-		when(this.loadBalancer.chooseServer(any())).thenReturn(
-				new Server("foo.com", 8000));
-		//to fix NPE
-		LoadBalancerStats stats = mock(LoadBalancerStats.class);
-		when(this.loadBalancer.getLoadBalancerStats()).thenReturn(stats);
-		when(stats.getSingleServerStat(any(Server.class))).thenReturn(mock(ServerStats.class));
-	}
+    @Before
+    public void init() {
+        when(this.loadBalancer.chooseServer(any())).thenReturn(
+                new Server("foo.com", 8000));
+        //to fix NPE
+        LoadBalancerStats stats = mock(LoadBalancerStats.class);
+        when(this.loadBalancer.getLoadBalancerStats()).thenReturn(stats);
+        when(stats.getSingleServerStat(any(Server.class))).thenReturn(mock(ServerStats.class));
+    }
 
-	@Test
-	public void remoteRequestIsSent() throws Exception {
-		Request request = new RequestTemplate().method("GET").append("http://foo/")
-				.request();
-		this.client.execute(request, new Options());
-		RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
+    @Test
+    public void remoteRequestIsSent() throws Exception {
+        Request request = new RequestTemplate().method("GET").append("http://foo/")
+                .request();
+        this.client.execute(request, new Options());
+        RequestMatcher matcher = new RequestMatcher("http://foo.com:8000/");
 		/*FIXME verify(this.delegate).execute(argThat(matcher),
 				any(Options.class));*/
-	}
+    }
 
-	@Test
-	public void remoteRequestIsSecure() throws Exception {
-		Request request = new RequestTemplate().method("GET").append("https://foo/")
-				.request();
-		this.client.execute(request, new Options());
-		RequestMatcher matcher = new RequestMatcher("https://foo.com:8000/");
+    @Test
+    public void remoteRequestIsSecure() throws Exception {
+        Request request = new RequestTemplate().method("GET").append("https://foo/")
+                .request();
+        this.client.execute(request, new Options());
+        RequestMatcher matcher = new RequestMatcher("https://foo.com:8000/");
 		/*FIXME verify(this.delegate).execute(argThat(matcher),
 				any(Options.class));*/
-	}
+    }
 
-	private final static class RequestMatcher extends CustomMatcher<Request> {
-		private String url;
+    private final static class RequestMatcher extends CustomMatcher<Request> {
+        private String url;
 
-		private RequestMatcher(String url) {
-			super("request has URI: " + url);
-			this.url = url;
-		}
+        private RequestMatcher(String url) {
+            super("request has URI: " + url);
+            this.url = url;
+        }
 
-		@Override
-		public boolean matches(Object item) {
-			Request request = (Request) item;
-			return request.url().equals(this.url);
-		}
-	}
+        @Override
+        public boolean matches(Object item) {
+            Request request = (Request) item;
+            return request.url().equals(this.url);
+        }
+    }
 
 }

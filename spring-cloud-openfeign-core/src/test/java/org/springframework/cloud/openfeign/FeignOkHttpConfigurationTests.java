@@ -17,9 +17,6 @@
 package org.springframework.cloud.openfeign;
 
 import okhttp3.OkHttpClient;
-
-import java.lang.reflect.Field;
-import javax.net.ssl.HostnameVerifier;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -33,40 +30,43 @@ import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.util.ReflectionUtils;
 
+import javax.net.ssl.HostnameVerifier;
+import java.lang.reflect.Field;
+
 /**
  * @author Ryan Baxter
  */
 @RunWith(ModifiedClassPathRunner.class)
-@ClassPathExclusions({ "ribbon-loadbalancer-{version:\\d.*}.jar" })
+@ClassPathExclusions({"ribbon-loadbalancer-{version:\\d.*}.jar"})
 public class FeignOkHttpConfigurationTests {
 
-	private ConfigurableApplicationContext context;
+    private ConfigurableApplicationContext context;
 
-	@Before
-	public void setUp() {
-		context = new SpringApplicationBuilder().properties("debug=true","feign.httpclient.disableSslValidation=true",
-				"feign.okhttp.enabled=true", "feign.httpclient.enabled=false").web(false)
-				.sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
-	}
+    @Before
+    public void setUp() {
+        context = new SpringApplicationBuilder().properties("debug=true", "feign.httpclient.disableSslValidation=true",
+                        "feign.okhttp.enabled=true", "feign.httpclient.enabled=false").web(false)
+                .sources(HttpClientConfiguration.class, FeignAutoConfiguration.class).run();
+    }
 
-	@After
-	public void tearDown() {
-		if(context != null) {
-			context.close();
-		}
-	}
+    @After
+    public void tearDown() {
+        if (context != null) {
+            context.close();
+        }
+    }
 
-	@Test
-	public void disableSslTest() throws Exception {
-		OkHttpClient httpClient = context.getBean(OkHttpClient.class);
-		HostnameVerifier hostnameVerifier = (HostnameVerifier)this.getField(httpClient, "hostnameVerifier");
-		Assert.assertTrue(OkHttpClientFactory.TrustAllHostnames.class.isInstance(hostnameVerifier));
-	}
+    @Test
+    public void disableSslTest() throws Exception {
+        OkHttpClient httpClient = context.getBean(OkHttpClient.class);
+        HostnameVerifier hostnameVerifier = (HostnameVerifier) this.getField(httpClient, "hostnameVerifier");
+        Assert.assertTrue(OkHttpClientFactory.TrustAllHostnames.class.isInstance(hostnameVerifier));
+    }
 
-	protected <T> Object getField(Object target, String name) {
-		Field field = ReflectionUtils.findField(target.getClass(), name);
-		ReflectionUtils.makeAccessible(field);
-		Object value = ReflectionUtils.getField(field, target);
-		return value;
-	}
+    protected <T> Object getField(Object target, String name) {
+        Field field = ReflectionUtils.findField(target.getClass(), name);
+        ReflectionUtils.makeAccessible(field);
+        Object value = ReflectionUtils.getField(field, target);
+        return value;
+    }
 }

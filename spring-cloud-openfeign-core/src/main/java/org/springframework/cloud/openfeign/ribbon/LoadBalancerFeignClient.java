@@ -16,19 +16,17 @@
 
 package org.springframework.cloud.openfeign.ribbon;
 
-import java.io.IOException;
-import java.net.URI;
-
-import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
-
 import com.netflix.client.ClientException;
 import com.netflix.client.config.CommonClientConfigKey;
 import com.netflix.client.config.DefaultClientConfigImpl;
 import com.netflix.client.config.IClientConfig;
-
 import feign.Client;
 import feign.Request;
 import feign.Response;
+import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
+
+import java.io.IOException;
+import java.net.URI;
 
 /**
  * @author Dave Syer
@@ -36,91 +34,90 @@ import feign.Response;
  */
 public class LoadBalancerFeignClient implements Client {
 
-	static final Request.Options DEFAULT_OPTIONS = new Request.Options();
+    static final Request.Options DEFAULT_OPTIONS = new Request.Options();
 
-	private final Client delegate;
-	private CachingSpringLoadBalancerFactory lbClientFactory;
-	private SpringClientFactory clientFactory;
+    private final Client delegate;
+    private CachingSpringLoadBalancerFactory lbClientFactory;
+    private SpringClientFactory clientFactory;
 
-	public LoadBalancerFeignClient(Client delegate,
-								   CachingSpringLoadBalancerFactory lbClientFactory,
-								   SpringClientFactory clientFactory) {
-		this.delegate = delegate;
-		this.lbClientFactory = lbClientFactory;
-		this.clientFactory = clientFactory;
-	}
+    public LoadBalancerFeignClient(Client delegate,
+                                   CachingSpringLoadBalancerFactory lbClientFactory,
+                                   SpringClientFactory clientFactory) {
+        this.delegate = delegate;
+        this.lbClientFactory = lbClientFactory;
+        this.clientFactory = clientFactory;
+    }
 
-	@Override
-	public Response execute(Request request, Request.Options options) throws IOException {
-		try {
-			URI asUri = URI.create(request.url());
-			String clientName = asUri.getHost();
-			URI uriWithoutHost = cleanUrl(request.url(), clientName);
-			FeignLoadBalancer.RibbonRequest ribbonRequest = new FeignLoadBalancer.RibbonRequest(
-					this.delegate, request, uriWithoutHost);
+    @Override
+    public Response execute(Request request, Request.Options options) throws IOException {
+        try {
+            URI asUri = URI.create(request.url());
+            String clientName = asUri.getHost();
+            URI uriWithoutHost = cleanUrl(request.url(), clientName);
+            FeignLoadBalancer.RibbonRequest ribbonRequest = new FeignLoadBalancer.RibbonRequest(
+                    this.delegate, request, uriWithoutHost);
 
-			IClientConfig requestConfig = getClientConfig(options, clientName);
-			return lbClient(clientName).executeWithLoadBalancer(ribbonRequest,
-					requestConfig).toResponse();
-		}
-		catch (ClientException e) {
-			IOException io = findIOException(e);
-			if (io != null) {
-				throw io;
-			}
-			throw new RuntimeException(e);
-		}
-	}
+            IClientConfig requestConfig = getClientConfig(options, clientName);
+            return lbClient(clientName).executeWithLoadBalancer(ribbonRequest,
+                    requestConfig).toResponse();
+        } catch (ClientException e) {
+            IOException io = findIOException(e);
+            if (io != null) {
+                throw io;
+            }
+            throw new RuntimeException(e);
+        }
+    }
 
-	IClientConfig getClientConfig(Request.Options options, String clientName) {
-		IClientConfig requestConfig;
-		if (options == DEFAULT_OPTIONS) {
-			requestConfig = this.clientFactory.getClientConfig(clientName);
-		} else {
-			requestConfig = new FeignOptionsClientConfig(options);
-		}
-		return requestConfig;
-	}
+    IClientConfig getClientConfig(Request.Options options, String clientName) {
+        IClientConfig requestConfig;
+        if (options == DEFAULT_OPTIONS) {
+            requestConfig = this.clientFactory.getClientConfig(clientName);
+        } else {
+            requestConfig = new FeignOptionsClientConfig(options);
+        }
+        return requestConfig;
+    }
 
-	protected IOException findIOException(Throwable t) {
-		if (t == null) {
-			return null;
-		}
-		if (t instanceof IOException) {
-			return (IOException) t;
-		}
-		return findIOException(t.getCause());
-	}
+    protected IOException findIOException(Throwable t) {
+        if (t == null) {
+            return null;
+        }
+        if (t instanceof IOException) {
+            return (IOException) t;
+        }
+        return findIOException(t.getCause());
+    }
 
-	public Client getDelegate() {
-		return this.delegate;
-	}
+    public Client getDelegate() {
+        return this.delegate;
+    }
 
-	static URI cleanUrl(String originalUrl, String host) {
-		return URI.create(originalUrl.replaceFirst(host, ""));
-	}
+    static URI cleanUrl(String originalUrl, String host) {
+        return URI.create(originalUrl.replaceFirst(host, ""));
+    }
 
-	private FeignLoadBalancer lbClient(String clientName) {
-		return this.lbClientFactory.create(clientName);
-	}
+    private FeignLoadBalancer lbClient(String clientName) {
+        return this.lbClientFactory.create(clientName);
+    }
 
-	static class FeignOptionsClientConfig extends DefaultClientConfigImpl {
+    static class FeignOptionsClientConfig extends DefaultClientConfigImpl {
 
-		public FeignOptionsClientConfig(Request.Options options) {
-			setProperty(CommonClientConfigKey.ConnectTimeout,
-					options.connectTimeoutMillis());
-			setProperty(CommonClientConfigKey.ReadTimeout, options.readTimeoutMillis());
-		}
+        public FeignOptionsClientConfig(Request.Options options) {
+            setProperty(CommonClientConfigKey.ConnectTimeout,
+                    options.connectTimeoutMillis());
+            setProperty(CommonClientConfigKey.ReadTimeout, options.readTimeoutMillis());
+        }
 
-		@Override
-		public void loadProperties(String clientName) {
+        @Override
+        public void loadProperties(String clientName) {
 
-		}
+        }
 
-		@Override
-		public void loadDefaultValues() {
+        @Override
+        public void loadDefaultValues() {
 
-		}
+        }
 
-	}
+    }
 }

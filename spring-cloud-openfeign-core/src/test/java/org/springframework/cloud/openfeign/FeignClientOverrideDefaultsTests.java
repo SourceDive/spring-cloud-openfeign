@@ -17,6 +17,14 @@
 
 package org.springframework.cloud.openfeign;
 
+import feign.*;
+import feign.auth.BasicAuthRequestInterceptor;
+import feign.codec.Decoder;
+import feign.codec.Encoder;
+import feign.codec.ErrorDecoder;
+import feign.hystrix.HystrixFeign;
+import feign.optionals.OptionalDecoder;
+import feign.slf4j.Slf4jLogger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,25 +41,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-
-import feign.Contract;
-import feign.Feign;
-import feign.Logger;
-import feign.Request;
-import feign.RequestInterceptor;
-import feign.RequestLine;
-import feign.RequestTemplate;
-import feign.Retryer;
-import feign.auth.BasicAuthRequestInterceptor;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
-import feign.codec.ErrorDecoder;
-import feign.hystrix.HystrixFeign;
-import feign.optionals.OptionalDecoder;
-import feign.slf4j.Slf4jLogger;
+import static org.junit.Assert.*;
 
 /**
  * @author Spencer Gibb
@@ -61,167 +51,167 @@ import feign.slf4j.Slf4jLogger;
 @DirtiesContext
 public class FeignClientOverrideDefaultsTests {
 
-	@Autowired
-	private FeignContext context;
+    @Autowired
+    private FeignContext context;
 
-	@Autowired
-	private FooClient foo;
+    @Autowired
+    private FooClient foo;
 
-	@Autowired
-	private BarClient bar;
+    @Autowired
+    private BarClient bar;
 
-	@Test
-	public void clientsAvailable() {
-		assertNotNull(this.foo);
-		assertNotNull(this.bar);
-	}
+    @Test
+    public void clientsAvailable() {
+        assertNotNull(this.foo);
+        assertNotNull(this.bar);
+    }
 
-	@Test
-	public void overrideDecoder() {
-		Decoder.Default.class.cast(this.context.getInstance("foo", Decoder.class));
-		OptionalDecoder.class.cast(this.context.getInstance("bar", Decoder.class));
-	}
+    @Test
+    public void overrideDecoder() {
+        Decoder.Default.class.cast(this.context.getInstance("foo", Decoder.class));
+        OptionalDecoder.class.cast(this.context.getInstance("bar", Decoder.class));
+    }
 
-	@Test
-	public void overrideEncoder() {
-		Encoder.Default.class.cast(this.context.getInstance("foo", Encoder.class));
-		SpringEncoder.class.cast(this.context.getInstance("bar", Encoder.class));
-	}
+    @Test
+    public void overrideEncoder() {
+        Encoder.Default.class.cast(this.context.getInstance("foo", Encoder.class));
+        SpringEncoder.class.cast(this.context.getInstance("bar", Encoder.class));
+    }
 
-	@Test
-	public void overrideLogger() {
-		Logger.JavaLogger.class.cast(this.context.getInstance("foo", Logger.class));
-		Slf4jLogger.class.cast(this.context.getInstance("bar", Logger.class));
-	}
+    @Test
+    public void overrideLogger() {
+        Logger.JavaLogger.class.cast(this.context.getInstance("foo", Logger.class));
+        Slf4jLogger.class.cast(this.context.getInstance("bar", Logger.class));
+    }
 
-	@Test
-	public void overrideContract() {
-		Contract.Default.class.cast(this.context.getInstance("foo", Contract.class));
-		SpringMvcContract.class.cast(this.context.getInstance("bar", Contract.class));
-	}
+    @Test
+    public void overrideContract() {
+        Contract.Default.class.cast(this.context.getInstance("foo", Contract.class));
+        SpringMvcContract.class.cast(this.context.getInstance("bar", Contract.class));
+    }
 
-	@Test
-	public void overrideLoggerLevel() {
-		assertNull(this.context.getInstance("foo", Logger.Level.class));
-		assertEquals(Logger.Level.HEADERS,
-				this.context.getInstance("bar", Logger.Level.class));
-	}
+    @Test
+    public void overrideLoggerLevel() {
+        assertNull(this.context.getInstance("foo", Logger.Level.class));
+        assertEquals(Logger.Level.HEADERS,
+                this.context.getInstance("bar", Logger.Level.class));
+    }
 
-	@Test
-	public void overrideRetryer() {
-		assertEquals(Retryer.NEVER_RETRY, this.context.getInstance("foo", Retryer.class));
-		Retryer.Default.class.cast(this.context.getInstance("bar", Retryer.class));
-	}
+    @Test
+    public void overrideRetryer() {
+        assertEquals(Retryer.NEVER_RETRY, this.context.getInstance("foo", Retryer.class));
+        Retryer.Default.class.cast(this.context.getInstance("bar", Retryer.class));
+    }
 
-	@Test
-	public void overrideErrorDecoder() {
-		assertNull(this.context.getInstance("foo", ErrorDecoder.class));
-		ErrorDecoder.Default.class
-				.cast(this.context.getInstance("bar", ErrorDecoder.class));
-	}
+    @Test
+    public void overrideErrorDecoder() {
+        assertNull(this.context.getInstance("foo", ErrorDecoder.class));
+        ErrorDecoder.Default.class
+                .cast(this.context.getInstance("bar", ErrorDecoder.class));
+    }
 
-	@Test
-	public void overrideBuilder() {
-		HystrixFeign.Builder.class.cast(this.context.getInstance("foo", Feign.Builder.class));
-		Feign.Builder.class
-				.cast(this.context.getInstance("bar", Feign.Builder.class));
-	}
+    @Test
+    public void overrideBuilder() {
+        HystrixFeign.Builder.class.cast(this.context.getInstance("foo", Feign.Builder.class));
+        Feign.Builder.class
+                .cast(this.context.getInstance("bar", Feign.Builder.class));
+    }
 
-	@Test
-	public void overrideRequestOptions() {
-		assertNull(this.context.getInstance("foo", Request.Options.class));
-		Request.Options options = this.context.getInstance("bar", Request.Options.class);
-		assertEquals(1, options.connectTimeoutMillis());
-		assertEquals(1, options.readTimeoutMillis());
-	}
+    @Test
+    public void overrideRequestOptions() {
+        assertNull(this.context.getInstance("foo", Request.Options.class));
+        Request.Options options = this.context.getInstance("bar", Request.Options.class);
+        assertEquals(1, options.connectTimeoutMillis());
+        assertEquals(1, options.readTimeoutMillis());
+    }
 
-	@Test
-	public void addRequestInterceptor() {
-		assertEquals(1,
-				this.context.getInstances("foo", RequestInterceptor.class).size());
-		assertEquals(2,
-				this.context.getInstances("bar", RequestInterceptor.class).size());
-	}
+    @Test
+    public void addRequestInterceptor() {
+        assertEquals(1,
+                this.context.getInstances("foo", RequestInterceptor.class).size());
+        assertEquals(2,
+                this.context.getInstances("bar", RequestInterceptor.class).size());
+    }
 
-	@Configuration
-	@EnableFeignClients(clients = { FooClient.class, BarClient.class })
-	@Import({ PropertyPlaceholderAutoConfiguration.class, ArchaiusAutoConfiguration.class,
-			FeignAutoConfiguration.class })
-	protected static class TestConfiguration {
-		@Bean
-		RequestInterceptor defaultRequestInterceptor() {
-			return new RequestInterceptor() {
-				@Override
-				public void apply(RequestTemplate template) {
-				}
-			};
-		}
-	}
+    @Configuration
+    @EnableFeignClients(clients = {FooClient.class, BarClient.class})
+    @Import({PropertyPlaceholderAutoConfiguration.class, ArchaiusAutoConfiguration.class,
+            FeignAutoConfiguration.class})
+    protected static class TestConfiguration {
+        @Bean
+        RequestInterceptor defaultRequestInterceptor() {
+            return new RequestInterceptor() {
+                @Override
+                public void apply(RequestTemplate template) {
+                }
+            };
+        }
+    }
 
-	@FeignClient(name = "foo", url = "http://foo", configuration = FooConfiguration.class)
-	interface FooClient {
-		@RequestLine("GET /")
-		String get();
+    @FeignClient(name = "foo", url = "http://foo", configuration = FooConfiguration.class)
+    interface FooClient {
+        @RequestLine("GET /")
+        String get();
 
-	}
+    }
 
-	public static class FooConfiguration {
-		@Bean
-		public Decoder feignDecoder() {
-			return new Decoder.Default();
-		}
+    public static class FooConfiguration {
+        @Bean
+        public Decoder feignDecoder() {
+            return new Decoder.Default();
+        }
 
-		@Bean
-		public Encoder feignEncoder() {
-			return new Encoder.Default();
-		}
+        @Bean
+        public Encoder feignEncoder() {
+            return new Encoder.Default();
+        }
 
-		@Bean
-		public Logger feignLogger() {
-			return new Logger.JavaLogger();
-		}
+        @Bean
+        public Logger feignLogger() {
+            return new Logger.JavaLogger();
+        }
 
-		@Bean
-		public Contract feignContract() {
-			return new Contract.Default();
-		}
+        @Bean
+        public Contract feignContract() {
+            return new Contract.Default();
+        }
 
-		@Bean
-		public Feign.Builder feignBuilder() {
-			return HystrixFeign.builder();
-		}
-	}
+        @Bean
+        public Feign.Builder feignBuilder() {
+            return HystrixFeign.builder();
+        }
+    }
 
-	@FeignClient(name = "bar", url = "http://bar", configuration = BarConfiguration.class)
-	interface BarClient {
-		@RequestMapping(value = "/", method = RequestMethod.GET)
-		String get();
-	}
+    @FeignClient(name = "bar", url = "http://bar", configuration = BarConfiguration.class)
+    interface BarClient {
+        @RequestMapping(value = "/", method = RequestMethod.GET)
+        String get();
+    }
 
-	public static class BarConfiguration {
-		@Bean
-		Logger.Level feignLevel() {
-			return Logger.Level.HEADERS;
-		}
+    public static class BarConfiguration {
+        @Bean
+        Logger.Level feignLevel() {
+            return Logger.Level.HEADERS;
+        }
 
-		@Bean
-		Retryer feignRetryer() {
-			return new Retryer.Default();
-		}
+        @Bean
+        Retryer feignRetryer() {
+            return new Retryer.Default();
+        }
 
-		@Bean
-		ErrorDecoder feignErrorDecoder() {
-			return new ErrorDecoder.Default();
-		}
+        @Bean
+        ErrorDecoder feignErrorDecoder() {
+            return new ErrorDecoder.Default();
+        }
 
-		@Bean
-		Request.Options feignRequestOptions() {
-			return new Request.Options(1, 1);
-		}
+        @Bean
+        Request.Options feignRequestOptions() {
+            return new Request.Options(1, 1);
+        }
 
-		@Bean
-		RequestInterceptor feignRequestInterceptor() {
-			return new BasicAuthRequestInterceptor("user", "pass");
-		}
-	}
+        @Bean
+        RequestInterceptor feignRequestInterceptor() {
+            return new BasicAuthRequestInterceptor("user", "pass");
+        }
+    }
 }

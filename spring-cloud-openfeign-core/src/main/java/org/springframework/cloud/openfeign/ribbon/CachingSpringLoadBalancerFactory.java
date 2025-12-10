@@ -16,15 +16,14 @@
 
 package org.springframework.cloud.openfeign.ribbon;
 
-import java.util.Map;
-
+import com.netflix.client.config.IClientConfig;
+import com.netflix.loadbalancer.ILoadBalancer;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
 import org.springframework.cloud.netflix.ribbon.ServerIntrospector;
 import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.util.ConcurrentReferenceHashMap;
 
-import com.netflix.client.config.IClientConfig;
-import com.netflix.loadbalancer.ILoadBalancer;
+import java.util.Map;
 
 /**
  * Factory for SpringLoadBalancer instances that caches the entries created.
@@ -36,32 +35,32 @@ import com.netflix.loadbalancer.ILoadBalancer;
  */
 public class CachingSpringLoadBalancerFactory {
 
-	private final SpringClientFactory factory;
-	private LoadBalancedRetryFactory loadBalancedRetryFactory = null;
+    private final SpringClientFactory factory;
+    private LoadBalancedRetryFactory loadBalancedRetryFactory = null;
 
-	private volatile Map<String, FeignLoadBalancer> cache = new ConcurrentReferenceHashMap<>();
+    private volatile Map<String, FeignLoadBalancer> cache = new ConcurrentReferenceHashMap<>();
 
-	public CachingSpringLoadBalancerFactory(SpringClientFactory factory) {
-		this.factory = factory;
-	}
+    public CachingSpringLoadBalancerFactory(SpringClientFactory factory) {
+        this.factory = factory;
+    }
 
-	public CachingSpringLoadBalancerFactory(SpringClientFactory factory, LoadBalancedRetryFactory loadBalancedRetryPolicyFactory) {
-		this.factory = factory;
-		this.loadBalancedRetryFactory = loadBalancedRetryPolicyFactory;
-	}
+    public CachingSpringLoadBalancerFactory(SpringClientFactory factory, LoadBalancedRetryFactory loadBalancedRetryPolicyFactory) {
+        this.factory = factory;
+        this.loadBalancedRetryFactory = loadBalancedRetryPolicyFactory;
+    }
 
-	public FeignLoadBalancer create(String clientName) {
-		FeignLoadBalancer client = this.cache.get(clientName);
-		if(client != null) {
-			return client;
-		}
-		IClientConfig config = this.factory.getClientConfig(clientName);
-		ILoadBalancer lb = this.factory.getLoadBalancer(clientName);
-		ServerIntrospector serverIntrospector = this.factory.getInstance(clientName, ServerIntrospector.class);
-		client = loadBalancedRetryFactory != null ? new RetryableFeignLoadBalancer(lb, config, serverIntrospector,
-			loadBalancedRetryFactory) : new FeignLoadBalancer(lb, config, serverIntrospector);
-		this.cache.put(clientName, client);
-		return client;
-	}
+    public FeignLoadBalancer create(String clientName) {
+        FeignLoadBalancer client = this.cache.get(clientName);
+        if (client != null) {
+            return client;
+        }
+        IClientConfig config = this.factory.getClientConfig(clientName);
+        ILoadBalancer lb = this.factory.getLoadBalancer(clientName);
+        ServerIntrospector serverIntrospector = this.factory.getInstance(clientName, ServerIntrospector.class);
+        client = loadBalancedRetryFactory != null ? new RetryableFeignLoadBalancer(lb, config, serverIntrospector,
+                loadBalancedRetryFactory) : new FeignLoadBalancer(lb, config, serverIntrospector);
+        this.cache.put(clientName, client);
+        return client;
+    }
 
 }

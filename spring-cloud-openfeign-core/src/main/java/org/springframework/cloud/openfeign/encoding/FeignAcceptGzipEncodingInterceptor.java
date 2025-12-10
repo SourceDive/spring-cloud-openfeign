@@ -28,22 +28,22 @@ import feign.RequestTemplate;
  */
 public class FeignAcceptGzipEncodingInterceptor extends BaseRequestInterceptor {
 
-	/**
-	 * Creates new instance of {@link FeignAcceptGzipEncodingInterceptor}.
-	 *
-	 * @param properties the encoding properties
-	 */
-	protected FeignAcceptGzipEncodingInterceptor(FeignClientEncodingProperties properties) {
-		super(properties);
-	}
+    /**
+     * Creates new instance of {@link FeignAcceptGzipEncodingInterceptor}.
+     *
+     * @param properties the encoding properties
+     */
+    protected FeignAcceptGzipEncodingInterceptor(FeignClientEncodingProperties properties) {
+        super(properties);
+    }
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void apply(RequestTemplate template) {
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void apply(RequestTemplate template) {
 
-		addHeader(template, HttpEncoding.ACCEPT_ENCODING_HEADER, HttpEncoding.GZIP_ENCODING,
-				HttpEncoding.DEFLATE_ENCODING);
-	}
+        addHeader(template, HttpEncoding.ACCEPT_ENCODING_HEADER, HttpEncoding.GZIP_ENCODING,
+                HttpEncoding.DEFLATE_ENCODING);
+    }
 }

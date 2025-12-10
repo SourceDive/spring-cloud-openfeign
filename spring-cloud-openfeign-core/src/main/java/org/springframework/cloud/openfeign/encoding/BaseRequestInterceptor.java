@@ -27,37 +27,37 @@ import org.springframework.util.Assert;
  */
 public abstract class BaseRequestInterceptor implements RequestInterceptor {
 
-	/**
-	 * The encoding properties.
-	 */
-	private final FeignClientEncodingProperties properties;
+    /**
+     * The encoding properties.
+     */
+    private final FeignClientEncodingProperties properties;
 
-	/**
-	 * Creates new instance of {@link BaseRequestInterceptor}.
-	 *
-	 * @param properties the encoding properties
-	 */
-	protected BaseRequestInterceptor(FeignClientEncodingProperties properties) {
-		Assert.notNull(properties, "Properties can not be null");
-		this.properties = properties;
-	}
+    /**
+     * Creates new instance of {@link BaseRequestInterceptor}.
+     *
+     * @param properties the encoding properties
+     */
+    protected BaseRequestInterceptor(FeignClientEncodingProperties properties) {
+        Assert.notNull(properties, "Properties can not be null");
+        this.properties = properties;
+    }
 
-	/**
-	 * Adds the header if it wasn't yet specified.
-	 *
-	 * @param requestTemplate the request
-	 * @param name			the header name
-	 * @param values		  the header values
-	 */
-	protected void addHeader(RequestTemplate requestTemplate, String name, String... values) {
+    /**
+     * Adds the header if it wasn't yet specified.
+     *
+     * @param requestTemplate the request
+     * @param name            the header name
+     * @param values          the header values
+     */
+    protected void addHeader(RequestTemplate requestTemplate, String name, String... values) {
 
-		if (!requestTemplate.headers().containsKey(name)) {
-			requestTemplate.header(name, values);
-		}
-	}
+        if (!requestTemplate.headers().containsKey(name)) {
+            requestTemplate.header(name, values);
+        }
+    }
 
-	protected FeignClientEncodingProperties getProperties() {
-		return properties;
-	}
+    protected FeignClientEncodingProperties getProperties() {
+        return properties;
+    }
 
 }

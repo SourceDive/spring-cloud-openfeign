@@ -18,7 +18,6 @@ package org.springframework.cloud.openfeign.encoding;
 
 import feign.Client;
 import feign.Feign;
-
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -46,8 +45,8 @@ import org.springframework.context.annotation.Configuration;
 @AutoConfigureAfter(FeignAutoConfiguration.class)
 public class FeignContentGzipEncodingAutoConfiguration {
 
-	@Bean
-	public FeignContentGzipEncodingInterceptor feignContentGzipEncodingInterceptor(FeignClientEncodingProperties properties) {
-		return new FeignContentGzipEncodingInterceptor(properties);
-	}
+    @Bean
+    public FeignContentGzipEncodingInterceptor feignContentGzipEncodingInterceptor(FeignClientEncodingProperties properties) {
+        return new FeignContentGzipEncodingInterceptor(properties);
+    }
 }

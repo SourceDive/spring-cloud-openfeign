@@ -17,9 +17,15 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.netflix.hystrix.HystrixCommand;
+import feign.Contract;
+import feign.Feign;
+import feign.Logger;
+import feign.Retryer;
+import feign.codec.Decoder;
+import feign.codec.Encoder;
+import feign.hystrix.HystrixFeign;
+import feign.optionals.OptionalDecoder;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -37,16 +43,8 @@ import org.springframework.core.convert.ConversionService;
 import org.springframework.format.support.DefaultFormattingConversionService;
 import org.springframework.format.support.FormattingConversionService;
 
-import com.netflix.hystrix.HystrixCommand;
-
-import feign.Contract;
-import feign.Feign;
-import feign.Logger;
-import feign.Retryer;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
-import feign.hystrix.HystrixFeign;
-import feign.optionals.OptionalDecoder;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author Dave Syer
@@ -55,74 +53,74 @@ import feign.optionals.OptionalDecoder;
 @Configuration
 public class FeignClientsConfiguration {
 
-	@Autowired
-	private ObjectFactory<HttpMessageConverters> messageConverters;
+    @Autowired
+    private ObjectFactory<HttpMessageConverters> messageConverters;
 
-	@Autowired(required = false)
-	private List<AnnotatedParameterProcessor> parameterProcessors = new ArrayList<>();
+    @Autowired(required = false)
+    private List<AnnotatedParameterProcessor> parameterProcessors = new ArrayList<>();
 
-	@Autowired(required = false)
-	private List<FeignFormatterRegistrar> feignFormatterRegistrars = new ArrayList<>();
+    @Autowired(required = false)
+    private List<FeignFormatterRegistrar> feignFormatterRegistrars = new ArrayList<>();
 
-	@Autowired(required = false)
-	private Logger logger;
+    @Autowired(required = false)
+    private Logger logger;
 
-	@Bean
-	@ConditionalOnMissingBean
-	public Decoder feignDecoder() {
-		return new OptionalDecoder(new ResponseEntityDecoder(new SpringDecoder(this.messageConverters)));
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    public Decoder feignDecoder() {
+        return new OptionalDecoder(new ResponseEntityDecoder(new SpringDecoder(this.messageConverters)));
+    }
 
-	@Bean
-	@ConditionalOnMissingBean
-	public Encoder feignEncoder() {
-		return new SpringEncoder(this.messageConverters);
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    public Encoder feignEncoder() {
+        return new SpringEncoder(this.messageConverters);
+    }
 
-	@Bean
-	@ConditionalOnMissingBean
-	public Contract feignContract(ConversionService feignConversionService) {
-		return new SpringMvcContract(this.parameterProcessors, feignConversionService);
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    public Contract feignContract(ConversionService feignConversionService) {
+        return new SpringMvcContract(this.parameterProcessors, feignConversionService);
+    }
 
-	@Bean
-	public FormattingConversionService feignConversionService() {
-		FormattingConversionService conversionService = new DefaultFormattingConversionService();
-		for (FeignFormatterRegistrar feignFormatterRegistrar : feignFormatterRegistrars) {
-			feignFormatterRegistrar.registerFormatters(conversionService);
-		}
-		return conversionService;
-	}
+    @Bean
+    public FormattingConversionService feignConversionService() {
+        FormattingConversionService conversionService = new DefaultFormattingConversionService();
+        for (FeignFormatterRegistrar feignFormatterRegistrar : feignFormatterRegistrars) {
+            feignFormatterRegistrar.registerFormatters(conversionService);
+        }
+        return conversionService;
+    }
 
-	@Configuration
-	@ConditionalOnClass({ HystrixCommand.class, HystrixFeign.class })
-	protected static class HystrixFeignConfiguration {
-		@Bean
-		@Scope("prototype")
-		@ConditionalOnMissingBean
-		@ConditionalOnProperty(name = "feign.hystrix.enabled")
-		public Feign.Builder feignHystrixBuilder() {
-			return HystrixFeign.builder();
-		}
-	}
+    @Configuration
+    @ConditionalOnClass({HystrixCommand.class, HystrixFeign.class})
+    protected static class HystrixFeignConfiguration {
+        @Bean
+        @Scope("prototype")
+        @ConditionalOnMissingBean
+        @ConditionalOnProperty(name = "feign.hystrix.enabled")
+        public Feign.Builder feignHystrixBuilder() {
+            return HystrixFeign.builder();
+        }
+    }
 
-	@Bean
-	@ConditionalOnMissingBean
-	public Retryer feignRetryer() {
-		return Retryer.NEVER_RETRY;
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    public Retryer feignRetryer() {
+        return Retryer.NEVER_RETRY;
+    }
 
-	@Bean
-	@Scope("prototype")
-	@ConditionalOnMissingBean
-	public Feign.Builder feignBuilder(Retryer retryer) {
-		return Feign.builder().retryer(retryer);
-	}
+    @Bean
+    @Scope("prototype")
+    @ConditionalOnMissingBean
+    public Feign.Builder feignBuilder(Retryer retryer) {
+        return Feign.builder().retryer(retryer);
+    }
 
-	@Bean
-	@ConditionalOnMissingBean(FeignLoggerFactory.class)
-	public FeignLoggerFactory feignLoggerFactory() {
-		return new DefaultFeignLoggerFactory(logger);
-	}
+    @Bean
+    @ConditionalOnMissingBean(FeignLoggerFactory.class)
+    public FeignLoggerFactory feignLoggerFactory() {
+        return new DefaultFeignLoggerFactory(logger);
+    }
 
 }

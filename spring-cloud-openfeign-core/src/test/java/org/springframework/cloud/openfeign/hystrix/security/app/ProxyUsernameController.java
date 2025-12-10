@@ -26,11 +26,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/proxy-username")
 public class ProxyUsernameController {
-	@Autowired
-	private UsernameClient usernameClient;
+    @Autowired
+    private UsernameClient usernameClient;
 
-	@RequestMapping
-	public String getUsername() {
-		return usernameClient.getUsername();
-	}
+    @RequestMapping
+    public String getUsername() {
+        return usernameClient.getUsername();
+    }
 }

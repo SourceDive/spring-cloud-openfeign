@@ -127,7 +127,7 @@ public class ProtobufSpringEncoderTest {
         });
         new ApacheHttpClient(httpClient).execute(requestTemplate.request(), new feign.Request.Options());
         HttpUriRequest httpUriRequest = request.get(0);
-        return  ((HttpEntityEnclosingRequestBase)httpUriRequest).getEntity();
+        return ((HttpEntityEnclosingRequestBase) httpUriRequest).getEntity();
     }
 
     private byte[] read(InputStream in, int length) throws IOException {

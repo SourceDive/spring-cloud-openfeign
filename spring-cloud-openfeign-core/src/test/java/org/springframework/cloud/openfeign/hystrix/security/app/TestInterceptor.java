@@ -18,23 +18,22 @@ package org.springframework.cloud.openfeign.hystrix.security.app;
 
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
-
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 /**
  * This interceptor should be called from an Hyxtrix command execution thread. It is
  * access the SecurityContext and settings an http header from the authentication details.
- * 
+ *
  * @author Daniel Lavoie
  */
 @Component
 public class TestInterceptor implements RequestInterceptor {
 
-	@Override
-	public void apply(RequestTemplate template) {
-		if (SecurityContextHolder.getContext().getAuthentication() != null)
-			template.header("username",
-					SecurityContextHolder.getContext().getAuthentication().getName());
-	}
+    @Override
+    public void apply(RequestTemplate template) {
+        if (SecurityContextHolder.getContext().getAuthentication() != null)
+            template.header("username",
+                    SecurityContextHolder.getContext().getAuthentication().getName());
+    }
 }

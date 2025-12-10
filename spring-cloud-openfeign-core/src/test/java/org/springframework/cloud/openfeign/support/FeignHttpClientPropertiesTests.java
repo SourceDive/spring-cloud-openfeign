@@ -29,9 +29,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.springframework.boot.test.util.EnvironmentTestUtils.addEnvironment;
 
 /**
@@ -41,58 +39,58 @@ import static org.springframework.boot.test.util.EnvironmentTestUtils.addEnviron
 @DirtiesContext
 public class FeignHttpClientPropertiesTests {
 
-	private AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+    private AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
 
-	@After
-	public void clear() {
-		if (this.context != null) {
-			this.context.close();
-		}
-	}
+    @After
+    public void clear() {
+        if (this.context != null) {
+            this.context.close();
+        }
+    }
 
-	@Test
-	public void testDefaults() {
-		setupContext();
-		assertEquals(FeignHttpClientProperties.DEFAULT_CONNECTION_TIMEOUT, getProperties().getConnectionTimeout());
-		assertEquals(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS, getProperties().getMaxConnections());
-		assertEquals(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS_PER_ROUTE, getProperties().getMaxConnectionsPerRoute());
-		assertEquals(FeignHttpClientProperties.DEFAULT_TIME_TO_LIVE, getProperties().getTimeToLive());
-		assertEquals(FeignHttpClientProperties.DEFAULT_DISABLE_SSL_VALIDATION, getProperties().isDisableSslValidation());
-		assertEquals(FeignHttpClientProperties.DEFAULT_FOLLOW_REDIRECTS, getProperties().isFollowRedirects());
-	}
+    @Test
+    public void testDefaults() {
+        setupContext();
+        assertEquals(FeignHttpClientProperties.DEFAULT_CONNECTION_TIMEOUT, getProperties().getConnectionTimeout());
+        assertEquals(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS, getProperties().getMaxConnections());
+        assertEquals(FeignHttpClientProperties.DEFAULT_MAX_CONNECTIONS_PER_ROUTE, getProperties().getMaxConnectionsPerRoute());
+        assertEquals(FeignHttpClientProperties.DEFAULT_TIME_TO_LIVE, getProperties().getTimeToLive());
+        assertEquals(FeignHttpClientProperties.DEFAULT_DISABLE_SSL_VALIDATION, getProperties().isDisableSslValidation());
+        assertEquals(FeignHttpClientProperties.DEFAULT_FOLLOW_REDIRECTS, getProperties().isFollowRedirects());
+    }
 
-	@Test
-	public void testCustomization() {
-		addEnvironment(this.context, "feign.httpclient.maxConnections=2",
-				"feign.httpclient.connectionTimeout=2",
-				"feign.httpclient.maxConnectionsPerRoute=2",
-				"feign.httpclient.timeToLive=2",
-				"feign.httpclient.disableSslValidation=true",
-				"feign.httpclient.followRedirects=false");
-		setupContext();
-		assertEquals(2, getProperties().getMaxConnections());
-		assertEquals(2, getProperties().getConnectionTimeout());
-		assertEquals(2, getProperties().getMaxConnectionsPerRoute());
-		assertEquals(2L, getProperties().getTimeToLive());
-		assertTrue(getProperties().isDisableSslValidation());
-		assertFalse(getProperties().isFollowRedirects());
-	}
+    @Test
+    public void testCustomization() {
+        addEnvironment(this.context, "feign.httpclient.maxConnections=2",
+                "feign.httpclient.connectionTimeout=2",
+                "feign.httpclient.maxConnectionsPerRoute=2",
+                "feign.httpclient.timeToLive=2",
+                "feign.httpclient.disableSslValidation=true",
+                "feign.httpclient.followRedirects=false");
+        setupContext();
+        assertEquals(2, getProperties().getMaxConnections());
+        assertEquals(2, getProperties().getConnectionTimeout());
+        assertEquals(2, getProperties().getMaxConnectionsPerRoute());
+        assertEquals(2L, getProperties().getTimeToLive());
+        assertTrue(getProperties().isDisableSslValidation());
+        assertFalse(getProperties().isFollowRedirects());
+    }
 
-	private void setupContext() {
-		this.context.register(PropertyPlaceholderAutoConfiguration.class, TestConfiguration.class);
-		this.context.refresh();
-	}
+    private void setupContext() {
+        this.context.register(PropertyPlaceholderAutoConfiguration.class, TestConfiguration.class);
+        this.context.refresh();
+    }
 
-	private FeignHttpClientProperties getProperties() {
-		return this.context.getBean(FeignHttpClientProperties.class);
-	}
+    private FeignHttpClientProperties getProperties() {
+        return this.context.getBean(FeignHttpClientProperties.class);
+    }
 
-	@Configuration
-	@EnableConfigurationProperties
-	protected static class TestConfiguration {
-		@Bean
-		FeignHttpClientProperties zuulProperties() {
-			return new FeignHttpClientProperties() ;
-		}
-	}
+    @Configuration
+    @EnableConfigurationProperties
+    protected static class TestConfiguration {
+        @Bean
+        FeignHttpClientProperties zuulProperties() {
+            return new FeignHttpClientProperties();
+        }
+    }
 }

@@ -22,9 +22,7 @@ import org.springframework.context.annotation.Bean;
 
 import java.util.Arrays;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -32,43 +30,47 @@ import static org.junit.Assert.assertThat;
  */
 public class FeignClientFactoryTests {
 
-	@Test
-	public void testChildContexts() {
-		AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
-		parent.refresh();
-		FeignContext context = new FeignContext();
-		context.setApplicationContext(parent);
-		context.setConfigurations(Arrays.asList(getSpec("foo", FooConfig.class),
-				getSpec("bar", BarConfig.class)));
+    @Test
+    public void testChildContexts() {
+        AnnotationConfigApplicationContext parent = new AnnotationConfigApplicationContext();
+        parent.refresh();
+        FeignContext context = new FeignContext();
+        context.setApplicationContext(parent);
+        context.setConfigurations(Arrays.asList(getSpec("foo", FooConfig.class),
+                getSpec("bar", BarConfig.class)));
 
-		Foo foo = context.getInstance("foo", Foo.class);
-		assertThat("foo was null", foo, is(notNullValue()));
+        Foo foo = context.getInstance("foo", Foo.class);
+        assertThat("foo was null", foo, is(notNullValue()));
 
-		Bar bar = context.getInstance("bar", Bar.class);
-		assertThat("bar was null", bar, is(notNullValue()));
+        Bar bar = context.getInstance("bar", Bar.class);
+        assertThat("bar was null", bar, is(notNullValue()));
 
-		Bar foobar = context.getInstance("foo", Bar.class);
-		assertThat("bar was not null", foobar, is(nullValue()));
-	}
+        Bar foobar = context.getInstance("foo", Bar.class);
+        assertThat("bar was not null", foobar, is(nullValue()));
+    }
 
-	private FeignClientSpecification getSpec(String name, Class<?> configClass) {
-		return new FeignClientSpecification(name, new Class[]{configClass});
-	}
+    private FeignClientSpecification getSpec(String name, Class<?> configClass) {
+        return new FeignClientSpecification(name, new Class[]{configClass});
+    }
 
-	static class FooConfig {
-		@Bean
-		Foo foo() {
-			return new Foo();
-		}
+    static class FooConfig {
+        @Bean
+        Foo foo() {
+            return new Foo();
+        }
 
-	}
-	static class Foo{}
+    }
 
-	static class BarConfig {
-		@Bean
-		Bar bar() {
-			return new Bar();
-		}
-	}
-	static class Bar{}
+    static class Foo {
+    }
+
+    static class BarConfig {
+        @Bean
+        Bar bar() {
+            return new Bar();
+        }
+    }
+
+    static class Bar {
+    }
 }

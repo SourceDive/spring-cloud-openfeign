@@ -16,12 +16,9 @@
 
 package org.springframework.cloud.openfeign.encoding;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
-import java.util.Collections;
-import java.util.List;
-
+import com.netflix.loadbalancer.BaseLoadBalancer;
+import com.netflix.loadbalancer.ILoadBalancer;
+import com.netflix.loadbalancer.Server;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,19 +26,21 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 import org.springframework.cloud.openfeign.encoding.app.client.InvoiceClient;
 import org.springframework.cloud.openfeign.encoding.app.domain.Invoice;
-import org.springframework.cloud.netflix.ribbon.RibbonClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.netflix.loadbalancer.BaseLoadBalancer;
-import com.netflix.loadbalancer.ILoadBalancer;
-import com.netflix.loadbalancer.Server;
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Tests the response compression.
@@ -49,51 +48,51 @@ import com.netflix.loadbalancer.Server;
  * @author Jakub Narloch
  */
 @SpringBootTest(classes = FeignContentEncodingTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"feign.compression.request.enabled=true",
-		"hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
-		"ribbon.OkToRetryOnAllOperations=false" })
+        "feign.compression.request.enabled=true",
+        "hystrix.command.default.execution.isolation.strategy=SEMAPHORE",
+        "ribbon.OkToRetryOnAllOperations=false"})
 @RunWith(SpringJUnit4ClassRunner.class)
 public class FeignContentEncodingTests {
 
-	@Autowired
-	private InvoiceClient invoiceClient;
+    @Autowired
+    private InvoiceClient invoiceClient;
 
-	@Test
-	public void compressedResponse() {
+    @Test
+    public void compressedResponse() {
 
-		// given
-		final List<Invoice> invoices = Invoices.createInvoiceList(50);
+        // given
+        final List<Invoice> invoices = Invoices.createInvoiceList(50);
 
-		// when
-		final ResponseEntity<List<Invoice>> response = this.invoiceClient
-				.saveInvoices(invoices);
+        // when
+        final ResponseEntity<List<Invoice>> response = this.invoiceClient
+                .saveInvoices(invoices);
 
-		// then
-		assertNotNull(response);
-		assertEquals(HttpStatus.OK, response.getStatusCode());
-		assertNotNull(response.getBody());
-		assertEquals(invoices.size(), response.getBody().size());
+        // then
+        assertNotNull(response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(invoices.size(), response.getBody().size());
 
-	}
+    }
 
-	@EnableFeignClients(clients = InvoiceClient.class)
-	@RibbonClient(name = "local", configuration = LocalRibbonClientConfiguration.class)
-	@SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
-	public static class Application {
-	}
+    @EnableFeignClients(clients = InvoiceClient.class)
+    @RibbonClient(name = "local", configuration = LocalRibbonClientConfiguration.class)
+    @SpringBootApplication(scanBasePackages = "org.springframework.cloud.openfeign.encoding.app")
+    public static class Application {
+    }
 
-	@Configuration
-	static class LocalRibbonClientConfiguration {
+    @Configuration
+    static class LocalRibbonClientConfiguration {
 
-		@Value("${local.server.port}")
-		private int port = 0;
+        @Value("${local.server.port}")
+        private int port = 0;
 
-		@Bean
-		public ILoadBalancer ribbonLoadBalancer() {
-			BaseLoadBalancer balancer = new BaseLoadBalancer();
-			balancer.setServersList(
-					Collections.singletonList(new Server("localhost", this.port)));
-			return balancer;
-		}
-	}
+        @Bean
+        public ILoadBalancer ribbonLoadBalancer() {
+            BaseLoadBalancer balancer = new BaseLoadBalancer();
+            balancer.setServersList(
+                    Collections.singletonList(new Server("localhost", this.port)));
+            return balancer;
+        }
+    }
 }

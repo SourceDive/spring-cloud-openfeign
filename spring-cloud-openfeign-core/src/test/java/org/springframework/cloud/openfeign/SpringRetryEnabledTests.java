@@ -16,23 +16,24 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.util.Map;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
 import org.springframework.cloud.commons.httpclient.HttpClientConfiguration;
+import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
+import org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration;
 import org.springframework.cloud.openfeign.ribbon.CachingSpringLoadBalancerFactory;
 import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer;
 import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
 import org.springframework.cloud.openfeign.ribbon.RetryableFeignLoadBalancer;
-import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
-import org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
@@ -42,21 +43,21 @@ import static org.hamcrest.Matchers.instanceOf;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {RibbonAutoConfiguration.class, RibbonClientConfiguration.class, LoadBalancerAutoConfiguration.class,
-		FeignRibbonClientAutoConfiguration.class, HttpClientConfiguration.class})
+        FeignRibbonClientAutoConfiguration.class, HttpClientConfiguration.class})
 public class SpringRetryEnabledTests implements ApplicationContextAware {
 
-	private ApplicationContext context;
+    private ApplicationContext context;
 
-	@Test
-	public void testLoadBalancedRetryFactoryBean() throws Exception {
-		Map<String, CachingSpringLoadBalancerFactory> lbFactorys =  context.getBeansOfType(CachingSpringLoadBalancerFactory.class);
-		assertThat(lbFactorys.values(), Matchers.hasSize(1));
-		FeignLoadBalancer lb =lbFactorys.values().iterator().next().create("foo");
-		assertThat(lb, instanceOf(RetryableFeignLoadBalancer.class));
-	}
+    @Test
+    public void testLoadBalancedRetryFactoryBean() throws Exception {
+        Map<String, CachingSpringLoadBalancerFactory> lbFactorys = context.getBeansOfType(CachingSpringLoadBalancerFactory.class);
+        assertThat(lbFactorys.values(), Matchers.hasSize(1));
+        FeignLoadBalancer lb = lbFactorys.values().iterator().next().create("foo");
+        assertThat(lb, instanceOf(RetryableFeignLoadBalancer.class));
+    }
 
-	@Override
-	public void setApplicationContext(ApplicationContext context) throws BeansException {
-		this.context = context;
-	}
+    @Override
+    public void setApplicationContext(ApplicationContext context) throws BeansException {
+        this.context = context;
+    }
 }

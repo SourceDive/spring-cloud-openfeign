@@ -17,6 +17,13 @@
 
 package org.springframework.cloud.openfeign;
 
+import feign.Contract;
+import feign.Feign;
+import feign.Logger;
+import feign.codec.Decoder;
+import feign.codec.Encoder;
+import feign.optionals.OptionalDecoder;
+import feign.slf4j.Slf4jLogger;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,14 +37,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import feign.Contract;
-import feign.Feign;
-import feign.Logger;
-import feign.codec.Decoder;
-import feign.codec.Encoder;
-import feign.optionals.OptionalDecoder;
-import feign.slf4j.Slf4jLogger;
-
 /**
  * @author Spencer Gibb
  */
@@ -46,41 +45,41 @@ import feign.slf4j.Slf4jLogger;
 @DirtiesContext
 public class EnableFeignClientsTests {
 
-	@Autowired
-	private FeignContext feignContext;
+    @Autowired
+    private FeignContext feignContext;
 
-	@Test
-	public void decoderDefaultCorrect() {
-		OptionalDecoder.class
-				.cast(this.feignContext.getInstance("foo", Decoder.class));
-	}
+    @Test
+    public void decoderDefaultCorrect() {
+        OptionalDecoder.class
+                .cast(this.feignContext.getInstance("foo", Decoder.class));
+    }
 
-	@Test
-	public void encoderDefaultCorrect() {
-		SpringEncoder.class.cast(this.feignContext.getInstance("foo", Encoder.class));
-	}
+    @Test
+    public void encoderDefaultCorrect() {
+        SpringEncoder.class.cast(this.feignContext.getInstance("foo", Encoder.class));
+    }
 
-	@Test
-	public void loggerDefaultCorrect() {
-		Slf4jLogger.class.cast(this.feignContext.getInstance("foo", Logger.class));
-	}
+    @Test
+    public void loggerDefaultCorrect() {
+        Slf4jLogger.class.cast(this.feignContext.getInstance("foo", Logger.class));
+    }
 
-	@Test
-	public void contractDefaultCorrect() {
-		SpringMvcContract.class
-				.cast(this.feignContext.getInstance("foo", Contract.class));
-	}
+    @Test
+    public void contractDefaultCorrect() {
+        SpringMvcContract.class
+                .cast(this.feignContext.getInstance("foo", Contract.class));
+    }
 
-	@Test
-	public void builderDefaultCorrect() {
-		Feign.Builder.class
-				.cast(this.feignContext.getInstance("foo", Feign.Builder.class));
-	}
+    @Test
+    public void builderDefaultCorrect() {
+        Feign.Builder.class
+                .cast(this.feignContext.getInstance("foo", Feign.Builder.class));
+    }
 
-	@Configuration
-	@Import({ PropertyPlaceholderAutoConfiguration.class, ArchaiusAutoConfiguration.class,
-			FeignAutoConfiguration.class })
-	protected static class PlainConfiguration {
-	}
+    @Configuration
+    @Import({PropertyPlaceholderAutoConfiguration.class, ArchaiusAutoConfiguration.class,
+            FeignAutoConfiguration.class})
+    protected static class PlainConfiguration {
+    }
 
 }

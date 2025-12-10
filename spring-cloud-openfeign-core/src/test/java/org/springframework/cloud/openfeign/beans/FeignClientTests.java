@@ -16,11 +16,6 @@
 
 package org.springframework.cloud.openfeign.beans;
 
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Proxy;
-import java.util.Map;
-import java.util.Objects;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +34,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
+import java.util.Map;
+import java.util.Objects;
+
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -47,89 +47,89 @@ import static org.junit.Assert.assertTrue;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = FeignClientTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"spring.application.name=feignclienttest",
-		"logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
-		"feign.httpclient.enabled=false", "feign.okhttp.enabled=false" })
+        "spring.application.name=feignclienttest",
+        "logging.level.org.springframework.cloud.openfeign.valid=DEBUG",
+        "feign.httpclient.enabled=false", "feign.okhttp.enabled=false"})
 @DirtiesContext
 public class FeignClientTests {
 
-	@Value("${local.server.port}")
-	private int port = 0;
+    @Value("${local.server.port}")
+    private int port = 0;
 
-	@Autowired
-	private TestClient testClient;
+    @Autowired
+    private TestClient testClient;
 
-	@Autowired
-	private ApplicationContext context;
+    @Autowired
+    private ApplicationContext context;
 
-	@Qualifier("uniquequalifier")
-	@Autowired
-	private org.springframework.cloud.openfeign.beans.extra.TestClient extraClient;
+    @Qualifier("uniquequalifier")
+    @Autowired
+    private org.springframework.cloud.openfeign.beans.extra.TestClient extraClient;
 
-	@Configuration
-	@EnableAutoConfiguration
-	@RestController
-	@EnableFeignClients
-	protected static class Application {
+    @Configuration
+    @EnableAutoConfiguration
+    @RestController
+    @EnableFeignClients
+    protected static class Application {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/hello")
-		public Hello getHello() {
-			return new Hello("hello world 1");
-		}
-	}
+        @RequestMapping(method = RequestMethod.GET, value = "/hello")
+        public Hello getHello() {
+            return new Hello("hello world 1");
+        }
+    }
 
-	public static class Hello {
-		private String message;
+    public static class Hello {
+        private String message;
 
-		public Hello() {
-		}
+        public Hello() {
+        }
 
-		public Hello(String message) {
-			this.message = message;
-		}
+        public Hello(String message) {
+            this.message = message;
+        }
 
-		public String getMessage() {
-			return message;
-		}
+        public String getMessage() {
+            return message;
+        }
 
-		public void setMessage(String message) {
-			this.message = message;
-		}
+        public void setMessage(String message) {
+            this.message = message;
+        }
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) return true;
-			if (o == null || getClass() != o.getClass()) return false;
-			Hello that = (Hello) o;
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Hello that = (Hello) o;
 
-			return Objects.equals(message, that.message);
-		}
+            return Objects.equals(message, that.message);
+        }
 
-		@Override
-		public int hashCode() {
-			return message != null ? message.hashCode() : 0;
-		}
-	}
+        @Override
+        public int hashCode() {
+            return message != null ? message.hashCode() : 0;
+        }
+    }
 
-	@Test
-	public void testAnnnotations() throws Exception {
-		Map<String, Object> beans = this.context
-				.getBeansWithAnnotation(FeignClient.class);
-		assertTrue("Wrong clients: " + beans,
-				beans.containsKey(TestClient.class.getName()));
-	}
+    @Test
+    public void testAnnnotations() throws Exception {
+        Map<String, Object> beans = this.context
+                .getBeansWithAnnotation(FeignClient.class);
+        assertTrue("Wrong clients: " + beans,
+                beans.containsKey(TestClient.class.getName()));
+    }
 
-	@Test
-	public void testClient() {
-		assertNotNull("testClient was null", this.testClient);
-		assertNotNull("testClient was null", this.extraClient);
-		assertTrue("testClient is not a java Proxy",
-				Proxy.isProxyClass(this.testClient.getClass()));
-		InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.testClient);
-		assertNotNull("invocationHandler was null", invocationHandler);
-	}
+    @Test
+    public void testClient() {
+        assertNotNull("testClient was null", this.testClient);
+        assertNotNull("testClient was null", this.extraClient);
+        assertTrue("testClient is not a java Proxy",
+                Proxy.isProxyClass(this.testClient.getClass()));
+        InvocationHandler invocationHandler = Proxy.getInvocationHandler(this.testClient);
+        assertNotNull("invocationHandler was null", invocationHandler);
+    }
 
-	@Configuration
-	public static class TestDefaultFeignConfig {
-	}
+    @Configuration
+    public static class TestDefaultFeignConfig {
+    }
 }

@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
  */
 @FeignClient(name = "localapp")
 public interface TestClient {
-	@RequestMapping(method = RequestMethod.GET, value = "/hello")
-	String getHello();
+    @RequestMapping(method = RequestMethod.GET, value = "/hello")
+    String getHello();
 }
 

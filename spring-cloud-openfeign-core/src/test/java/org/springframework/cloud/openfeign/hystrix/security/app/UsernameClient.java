@@ -25,6 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @FeignClient("username")
 public interface UsernameClient {
 
-	@RequestMapping("/username")
-	public String getUsername();
+    @RequestMapping("/username")
+    public String getUsername();
 }

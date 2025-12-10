@@ -38,33 +38,33 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 @AutoConfigureBefore(SecurityAutoConfiguration.class)
 public class TestAutoConfiguration {
 
-	public static final String USER = "user";
-	public static final String PASSWORD = "{noop}password";
+    public static final String USER = "user";
+    public static final String PASSWORD = "{noop}password";
 
-	@Configuration
-	@Order(Ordered.HIGHEST_PRECEDENCE)
-	protected static class TestSecurityConfiguration extends WebSecurityConfigurerAdapter {
+    @Configuration
+    @Order(Ordered.HIGHEST_PRECEDENCE)
+    protected static class TestSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 
-		TestSecurityConfiguration() {
-			super(true);
-		}
+        TestSecurityConfiguration() {
+            super(true);
+        }
 
-		@Bean
-		public UserDetailsService userDetailsService() {
-			InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
-			manager.createUser(User.withUsername(USER).password(PASSWORD).roles("USER").build());
-			return manager;
-		}
+        @Bean
+        public UserDetailsService userDetailsService() {
+            InMemoryUserDetailsManager manager = new InMemoryUserDetailsManager();
+            manager.createUser(User.withUsername(USER).password(PASSWORD).roles("USER").build());
+            return manager;
+        }
 
-		@Override
-		protected void configure(HttpSecurity http) throws Exception {
-			// super.configure(http);
-			http.antMatcher("/proxy-username")
-					.httpBasic()
-					.and()
-					.authorizeRequests().antMatchers("/**").permitAll();
-		}
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+            // super.configure(http);
+            http.antMatcher("/proxy-username")
+                    .httpBasic()
+                    .and()
+                    .authorizeRequests().antMatchers("/**").permitAll();
+        }
 
-	}
+    }
 }

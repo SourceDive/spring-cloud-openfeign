@@ -17,11 +17,7 @@
 
 package org.springframework.cloud.openfeign.support;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.charset.Charset;
-import java.util.Collection;
-
+import feign.RequestTemplate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentMatcher;
@@ -44,152 +40,153 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.nio.charset.Charset;
+import java.util.Collection;
 
-import feign.RequestTemplate;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 /**
  * @author Spencer Gibb
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = SpringEncoderTests.Application.class, webEnvironment = WebEnvironment.RANDOM_PORT, value = {
-		"spring.application.name=springencodertest", "spring.jmx.enabled=false" })
+        "spring.application.name=springencodertest", "spring.jmx.enabled=false"})
 @DirtiesContext
 public class SpringEncoderTests {
 
-	@Autowired
-	private FeignContext context;
+    @Autowired
+    private FeignContext context;
 
-	@Autowired
-	@Qualifier("myHttpMessageConverter")
-	private HttpMessageConverter<?> myConverter;
+    @Autowired
+    @Qualifier("myHttpMessageConverter")
+    private HttpMessageConverter<?> myConverter;
 
-	@Test
-	public void testCustomHttpMessageConverter() {
-		SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
-		assertThat(encoder, is(notNullValue()));
-		RequestTemplate request = new RequestTemplate();
+    @Test
+    public void testCustomHttpMessageConverter() {
+        SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
+        assertThat(encoder, is(notNullValue()));
+        RequestTemplate request = new RequestTemplate();
 
-		encoder.encode("hi", MyType.class, request);
+        encoder.encode("hi", MyType.class, request);
 
-		Collection<String> contentTypeHeader = request.headers().get("Content-Type");
-		assertThat("missing content type header", contentTypeHeader, is(notNullValue()));
-		assertThat("missing content type header", contentTypeHeader.isEmpty(), is(false));
+        Collection<String> contentTypeHeader = request.headers().get("Content-Type");
+        assertThat("missing content type header", contentTypeHeader, is(notNullValue()));
+        assertThat("missing content type header", contentTypeHeader.isEmpty(), is(false));
 
-		String header = contentTypeHeader.iterator().next();
-		assertThat("content type header is wrong", header, is("application/mytype"));
-		
-		assertThat("request charset is null", request.charset(), is(notNullValue()));
-		assertThat("request charset is wrong", request.charset(), is(Charset.forName("UTF-8")));
-	}
+        String header = contentTypeHeader.iterator().next();
+        assertThat("content type header is wrong", header, is("application/mytype"));
 
-	@Test
-	public void testBinaryData() {
-		SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
-		assertThat(encoder, is(notNullValue()));
-		RequestTemplate request = new RequestTemplate();
+        assertThat("request charset is null", request.charset(), is(notNullValue()));
+        assertThat("request charset is wrong", request.charset(), is(Charset.forName("UTF-8")));
+    }
 
-		encoder.encode("hi".getBytes(), null, request);
+    @Test
+    public void testBinaryData() {
+        SpringEncoder encoder = this.context.getInstance("foo", SpringEncoder.class);
+        assertThat(encoder, is(notNullValue()));
+        RequestTemplate request = new RequestTemplate();
 
-		assertThat("request charset is not null", request.charset(), is(nullValue()));
-	}
-	
-	class MediaTypeMatcher implements ArgumentMatcher<MediaType> {
+        encoder.encode("hi".getBytes(), null, request);
 
-		private MediaType mediaType;
+        assertThat("request charset is not null", request.charset(), is(nullValue()));
+    }
 
-		public MediaTypeMatcher(String type, String subtype) {
-			this.mediaType = new MediaType(type, subtype);
-		}
+    class MediaTypeMatcher implements ArgumentMatcher<MediaType> {
 
-		@Override
-		public boolean matches(MediaType argument) {
-			return this.mediaType.equals(argument);
-		}
+        private MediaType mediaType;
 
-		@Override
-		public String toString() {
-			final StringBuffer sb = new StringBuffer("MediaTypeMatcher{");
-			sb.append("mediaType=").append(this.mediaType);
-			sb.append('}');
-			return sb.toString();
-		}
-	}
+        public MediaTypeMatcher(String type, String subtype) {
+            this.mediaType = new MediaType(type, subtype);
+        }
 
-	protected static class MyType {
-		private String value;
+        @Override
+        public boolean matches(MediaType argument) {
+            return this.mediaType.equals(argument);
+        }
 
-		public String getValue() {
-			return value;
-		}
+        @Override
+        public String toString() {
+            final StringBuffer sb = new StringBuffer("MediaTypeMatcher{");
+            sb.append("mediaType=").append(this.mediaType);
+            sb.append('}');
+            return sb.toString();
+        }
+    }
 
-		public void setValue(String value) {
-			this.value = value;
-		}
-	}
+    protected static class MyType {
+        private String value;
 
-	protected interface TestClient {
+        public String getValue() {
+            return value;
+        }
 
-	}
+        public void setValue(String value) {
+            this.value = value;
+        }
+    }
 
-	@Configuration
-	@EnableAutoConfiguration
-	@RestController
-	protected static class Application implements TestClient {
+    protected interface TestClient {
 
-		@Bean
-		HttpMessageConverter<?> myHttpMessageConverter() {
-			return new MyHttpMessageConverter();
-		}
+    }
 
-		private static class MyHttpMessageConverter
-				extends AbstractGenericHttpMessageConverter<Object> {
+    @Configuration
+    @EnableAutoConfiguration
+    @RestController
+    protected static class Application implements TestClient {
 
-			public MyHttpMessageConverter() {
-				super(new MediaType("application", "mytype"));
-			}
+        @Bean
+        HttpMessageConverter<?> myHttpMessageConverter() {
+            return new MyHttpMessageConverter();
+        }
 
-			@Override
-			protected boolean supports(Class<?> clazz) {
-				return false;
-			}
+        private static class MyHttpMessageConverter
+                extends AbstractGenericHttpMessageConverter<Object> {
 
-			@Override
-			public boolean canRead(Class<?> clazz, MediaType mediaType) {
-				return true;
-			}
+            public MyHttpMessageConverter() {
+                super(new MediaType("application", "mytype"));
+            }
 
-			@Override
-			public boolean canWrite(Class<?> clazz, MediaType mediaType) {
-				if (clazz == String.class) {
-					return true;
-				}
-				return false;
-			}
+            @Override
+            protected boolean supports(Class<?> clazz) {
+                return false;
+            }
 
-			@Override
-			protected void writeInternal(Object o, Type type,
-					HttpOutputMessage outputMessage)
-					throws IOException, HttpMessageNotWritableException {
+            @Override
+            public boolean canRead(Class<?> clazz, MediaType mediaType) {
+                return true;
+            }
 
-			}
+            @Override
+            public boolean canWrite(Class<?> clazz, MediaType mediaType) {
+                if (clazz == String.class) {
+                    return true;
+                }
+                return false;
+            }
 
-			@Override
-			protected Object readInternal(Class<?> clazz, HttpInputMessage inputMessage)
-					throws IOException, HttpMessageNotReadableException {
-				return null;
-			}
+            @Override
+            protected void writeInternal(Object o, Type type,
+                                         HttpOutputMessage outputMessage)
+                    throws IOException, HttpMessageNotWritableException {
 
-			@Override
-			public Object read(Type type, Class<?> contextClass,
-					HttpInputMessage inputMessage)
-					throws IOException, HttpMessageNotReadableException {
-				return null;
-			}
-		}
-	}
+            }
+
+            @Override
+            protected Object readInternal(Class<?> clazz, HttpInputMessage inputMessage)
+                    throws IOException, HttpMessageNotReadableException {
+                return null;
+            }
+
+            @Override
+            public Object read(Type type, Class<?> contextClass,
+                               HttpInputMessage inputMessage)
+                    throws IOException, HttpMessageNotReadableException {
+                return null;
+            }
+        }
+    }
 
 }

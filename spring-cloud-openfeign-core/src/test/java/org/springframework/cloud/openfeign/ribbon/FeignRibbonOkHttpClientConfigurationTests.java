@@ -17,9 +17,6 @@
 package org.springframework.cloud.openfeign.ribbon;
 
 import okhttp3.OkHttpClient;
-
-import java.lang.reflect.Field;
-import javax.net.ssl.HostnameVerifier;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,45 +25,47 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.commons.httpclient.OkHttpClientFactory;
-import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientRetryTests;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.ReflectionUtils;
+
+import javax.net.ssl.HostnameVerifier;
+import java.lang.reflect.Field;
 
 /**
  * @author Ryan Baxter
  */
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = FeignRibbonOkHttpClientConfigurationTests.FeignRibbonOkHttpClientConfigurationTestsApplication.class,
-		webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-		properties = {"debug=true","feign.httpclient.disableSslValidation=true",
-				"feign.okhttp.enabled=true", "feign.httpclient.enabled=false"})
+        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = {"debug=true", "feign.httpclient.disableSslValidation=true",
+                "feign.okhttp.enabled=true", "feign.httpclient.enabled=false"})
 @DirtiesContext
 public class FeignRibbonOkHttpClientConfigurationTests {
 
-	@Autowired
-	OkHttpClient httpClient;
+    @Autowired
+    OkHttpClient httpClient;
 
-	@Test
-	public void disableSslTest() throws Exception {
-		HostnameVerifier hostnameVerifier = (HostnameVerifier)this.getField(httpClient, "hostnameVerifier");
-		Assert.assertTrue(OkHttpClientFactory.TrustAllHostnames.class.isInstance(hostnameVerifier));
-	}
+    @Test
+    public void disableSslTest() throws Exception {
+        HostnameVerifier hostnameVerifier = (HostnameVerifier) this.getField(httpClient, "hostnameVerifier");
+        Assert.assertTrue(OkHttpClientFactory.TrustAllHostnames.class.isInstance(hostnameVerifier));
+    }
 
-	protected <T> Object getField(Object target, String name) {
-		Field field = ReflectionUtils.findField(target.getClass(), name);
-		ReflectionUtils.makeAccessible(field);
-		Object value = ReflectionUtils.getField(field, target);
-		return value;
-	}
+    protected <T> Object getField(Object target, String name) {
+        Field field = ReflectionUtils.findField(target.getClass(), name);
+        ReflectionUtils.makeAccessible(field);
+        Object value = ReflectionUtils.getField(field, target);
+        return value;
+    }
 
-	@Configuration
-	@EnableAutoConfiguration
-	static class FeignRibbonOkHttpClientConfigurationTestsApplication {
-		public static void main(String[] args) {
-			new SpringApplicationBuilder(FeignRibbonClientRetryTests.Application.class)
-					.run(args);
-		}
-	}
+    @Configuration
+    @EnableAutoConfiguration
+    static class FeignRibbonOkHttpClientConfigurationTestsApplication {
+        public static void main(String[] args) {
+            new SpringApplicationBuilder(FeignRibbonClientRetryTests.Application.class)
+                    .run(args);
+        }
+    }
 }

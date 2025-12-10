@@ -16,24 +16,22 @@
 
 package org.springframework.cloud.openfeign.ribbon;
 
+import com.netflix.loadbalancer.ILoadBalancer;
+import feign.Feign;
+import feign.Request;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.loadbalancer.LoadBalancedRetryFactory;
+import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.cloud.openfeign.FeignAutoConfiguration;
 import org.springframework.cloud.openfeign.support.FeignHttpClientProperties;
-import org.springframework.cloud.netflix.ribbon.SpringClientFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
-
-import com.netflix.loadbalancer.ILoadBalancer;
-
-import feign.Feign;
-import feign.Request;
 
 /**
  * Autoconfiguration to be activated if Feign is in use and needs to be use Ribbon as a
@@ -41,37 +39,37 @@ import feign.Request;
  *
  * @author Dave Syer
  */
-@ConditionalOnClass({ ILoadBalancer.class, Feign.class })
+@ConditionalOnClass({ILoadBalancer.class, Feign.class})
 @Configuration
 @AutoConfigureBefore(FeignAutoConfiguration.class)
-@EnableConfigurationProperties({ FeignHttpClientProperties.class })
+@EnableConfigurationProperties({FeignHttpClientProperties.class})
 //Order is important here, last should be the default, first should be optional
 // see https://github.com/spring-cloud/spring-cloud-netflix/issues/2086#issuecomment-316281653
-@Import({ HttpClientFeignLoadBalancedConfiguration.class,
-		OkHttpFeignLoadBalancedConfiguration.class,
-		DefaultFeignLoadBalancedConfiguration.class })
+@Import({HttpClientFeignLoadBalancedConfiguration.class,
+        OkHttpFeignLoadBalancedConfiguration.class,
+        DefaultFeignLoadBalancedConfiguration.class})
 public class FeignRibbonClientAutoConfiguration {
 
-	@Bean
-	@Primary
-	@ConditionalOnMissingClass("org.springframework.retry.support.RetryTemplate")
-	public CachingSpringLoadBalancerFactory cachingLBClientFactory(
-			SpringClientFactory factory) {
-		return new CachingSpringLoadBalancerFactory(factory);
-	}
+    @Bean
+    @Primary
+    @ConditionalOnMissingClass("org.springframework.retry.support.RetryTemplate")
+    public CachingSpringLoadBalancerFactory cachingLBClientFactory(
+            SpringClientFactory factory) {
+        return new CachingSpringLoadBalancerFactory(factory);
+    }
 
-	@Bean
-	@Primary
-	@ConditionalOnClass(name = "org.springframework.retry.support.RetryTemplate")
-	public CachingSpringLoadBalancerFactory retryabeCachingLBClientFactory(
-		SpringClientFactory factory,
-		LoadBalancedRetryFactory retryFactory) {
-		return new CachingSpringLoadBalancerFactory(factory, retryFactory);
-	}
+    @Bean
+    @Primary
+    @ConditionalOnClass(name = "org.springframework.retry.support.RetryTemplate")
+    public CachingSpringLoadBalancerFactory retryabeCachingLBClientFactory(
+            SpringClientFactory factory,
+            LoadBalancedRetryFactory retryFactory) {
+        return new CachingSpringLoadBalancerFactory(factory, retryFactory);
+    }
 
-	@Bean
-	@ConditionalOnMissingBean
-	public Request.Options feignRequestOptions() {
-		return LoadBalancerFeignClient.DEFAULT_OPTIONS;
-	}
+    @Bean
+    @ConditionalOnMissingBean
+    public Request.Options feignRequestOptions() {
+        return LoadBalancerFeignClient.DEFAULT_OPTIONS;
+    }
 }

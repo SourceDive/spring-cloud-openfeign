@@ -58,161 +58,161 @@ import static org.junit.Assert.fail;
 @DirtiesContext
 public class FeignClientUsingPropertiesTests {
 
-	@Autowired
-	FeignContext context;
+    @Autowired
+    FeignContext context;
 
-	@Autowired
-	private ApplicationContext applicationContext;
+    @Autowired
+    private ApplicationContext applicationContext;
 
-	@Value("${local.server.port}")
-	private int port = 0;
+    @Value("${local.server.port}")
+    private int port = 0;
 
-	private FeignClientFactoryBean fooFactoryBean;
+    private FeignClientFactoryBean fooFactoryBean;
 
-	private FeignClientFactoryBean barFactoryBean;
+    private FeignClientFactoryBean barFactoryBean;
 
-	private FeignClientFactoryBean formFactoryBean;
+    private FeignClientFactoryBean formFactoryBean;
 
-	public FeignClientUsingPropertiesTests() {
-		fooFactoryBean = new FeignClientFactoryBean();
-		fooFactoryBean.setName("foo");
-		fooFactoryBean.setType(FeignClientFactoryBean.class);
+    public FeignClientUsingPropertiesTests() {
+        fooFactoryBean = new FeignClientFactoryBean();
+        fooFactoryBean.setName("foo");
+        fooFactoryBean.setType(FeignClientFactoryBean.class);
 
-		barFactoryBean = new FeignClientFactoryBean();
-		barFactoryBean.setName("bar");
-		barFactoryBean.setType(FeignClientFactoryBean.class);
+        barFactoryBean = new FeignClientFactoryBean();
+        barFactoryBean.setName("bar");
+        barFactoryBean.setType(FeignClientFactoryBean.class);
 
-		formFactoryBean = new FeignClientFactoryBean();
-		formFactoryBean.setName("form");
-		formFactoryBean.setType(FeignClientFactoryBean.class);
-	}
+        formFactoryBean = new FeignClientFactoryBean();
+        formFactoryBean.setName("form");
+        formFactoryBean.setType(FeignClientFactoryBean.class);
+    }
 
-	public FooClient fooClient() {
-		fooFactoryBean.setApplicationContext(applicationContext);
-		return fooFactoryBean.feign(context).target(FooClient.class, "http://localhost:" + this.port);
-	}
+    public FooClient fooClient() {
+        fooFactoryBean.setApplicationContext(applicationContext);
+        return fooFactoryBean.feign(context).target(FooClient.class, "http://localhost:" + this.port);
+    }
 
-	public BarClient barClient() {
-		barFactoryBean.setApplicationContext(applicationContext);
-		return barFactoryBean.feign(context).target(BarClient.class, "http://localhost:" + this.port);
-	}
+    public BarClient barClient() {
+        barFactoryBean.setApplicationContext(applicationContext);
+        return barFactoryBean.feign(context).target(BarClient.class, "http://localhost:" + this.port);
+    }
 
-	public FormClient formClient() {
-		formFactoryBean.setApplicationContext(applicationContext);
-		return formFactoryBean.feign(context).target(FormClient.class, "http://localhost:" + this.port);
-	}
+    public FormClient formClient() {
+        formFactoryBean.setApplicationContext(applicationContext);
+        return formFactoryBean.feign(context).target(FormClient.class, "http://localhost:" + this.port);
+    }
 
-	@Test
-	public void testFoo() {
-		String response = fooClient().foo();
-		assertEquals("OK", response);
-	}
+    @Test
+    public void testFoo() {
+        String response = fooClient().foo();
+        assertEquals("OK", response);
+    }
 
-	@Test(expected = RetryableException.class)
-	public void testBar() {
-		barClient().bar();
-		fail("it should timeout");
-	}
+    @Test(expected = RetryableException.class)
+    public void testBar() {
+        barClient().bar();
+        fail("it should timeout");
+    }
 
-	@Test
-	public void testForm() {
-		Map<String, String> request = Collections.singletonMap("form", "Data");
-		String response = formClient().form(request);
-		assertEquals("Data", response);
-	}
+    @Test
+    public void testForm() {
+        Map<String, String> request = Collections.singletonMap("form", "Data");
+        String response = formClient().form(request);
+        assertEquals("Data", response);
+    }
 
-	protected interface FooClient {
+    protected interface FooClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/foo")
-		String foo();
-	}
+        @RequestMapping(method = RequestMethod.GET, value = "/foo")
+        String foo();
+    }
 
-	protected interface BarClient {
+    protected interface BarClient {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/bar")
-		String bar();
-	}
+        @RequestMapping(method = RequestMethod.GET, value = "/bar")
+        String bar();
+    }
 
-	protected interface FormClient {
+    protected interface FormClient {
 
-		@RequestMapping(value = "/form", method = RequestMethod.POST,
-				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-		String form(Map<String, String> form);
+        @RequestMapping(value = "/form", method = RequestMethod.POST,
+                consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        String form(Map<String, String> form);
 
-	}
+    }
 
-	@Configuration
-	@EnableAutoConfiguration
-	@RestController
-	protected static class Application {
+    @Configuration
+    @EnableAutoConfiguration
+    @RestController
+    protected static class Application {
 
-		@RequestMapping(method = RequestMethod.GET, value = "/foo")
-		public String foo(HttpServletRequest request) throws IllegalAccessException {
-			if ("Foo".equals(request.getHeader("Foo")) &&
-					"Bar".equals(request.getHeader("Bar"))) {
-				return "OK";
-			} else {
-				throw new IllegalAccessException("It should has Foo and Bar header");
-			}
-		}
+        @RequestMapping(method = RequestMethod.GET, value = "/foo")
+        public String foo(HttpServletRequest request) throws IllegalAccessException {
+            if ("Foo".equals(request.getHeader("Foo")) &&
+                    "Bar".equals(request.getHeader("Bar"))) {
+                return "OK";
+            } else {
+                throw new IllegalAccessException("It should has Foo and Bar header");
+            }
+        }
 
-		@RequestMapping(method = RequestMethod.GET, value = "/bar")
-		public String bar() throws InterruptedException {
-			Thread.sleep(2000L);
-			return "OK";
-		}
+        @RequestMapping(method = RequestMethod.GET, value = "/bar")
+        public String bar() throws InterruptedException {
+            Thread.sleep(2000L);
+            return "OK";
+        }
 
-		@RequestMapping(value = "/form", method = RequestMethod.POST,
-				consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-		public String form(HttpServletRequest request) {
-			return request.getParameter("form");
-		}
+        @RequestMapping(value = "/form", method = RequestMethod.POST,
+                consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+        public String form(HttpServletRequest request) {
+            return request.getParameter("form");
+        }
 
-	}
+    }
 
-	public static class FooRequestInterceptor implements RequestInterceptor {
-		@Override
-		public void apply(RequestTemplate template) {
-			template.header("Foo", "Foo");
-		}
-	}
+    public static class FooRequestInterceptor implements RequestInterceptor {
+        @Override
+        public void apply(RequestTemplate template) {
+            template.header("Foo", "Foo");
+        }
+    }
 
-	public static class BarRequestInterceptor implements RequestInterceptor {
-		@Override
-		public void apply(RequestTemplate template) {
-			template.header("Bar", "Bar");
-		}
-	}
+    public static class BarRequestInterceptor implements RequestInterceptor {
+        @Override
+        public void apply(RequestTemplate template) {
+            template.header("Bar", "Bar");
+        }
+    }
 
-	public static class NoRetryer implements Retryer {
+    public static class NoRetryer implements Retryer {
 
-		@Override
-		public void continueOrPropagate(RetryableException e) {
-			throw e;
-		}
+        @Override
+        public void continueOrPropagate(RetryableException e) {
+            throw e;
+        }
 
-		@Override
-		public Retryer clone() {
-			return this;
-		}
-	}
+        @Override
+        public Retryer clone() {
+            return this;
+        }
+    }
 
-	public static class DefaultErrorDecoder extends ErrorDecoder.Default {
-	}
+    public static class DefaultErrorDecoder extends ErrorDecoder.Default {
+    }
 
-	public static class FormEncoder implements Encoder {
+    public static class FormEncoder implements Encoder {
 
-		@Override
-		public void encode(Object o, Type type, RequestTemplate requestTemplate) throws EncodeException {
-			Map<String, String> form = (Map<String, String>) o;
-			StringBuilder builder = new StringBuilder();
-			form.forEach((key, value) -> {
-				builder.append(key + "=" + value + "&");
-			});
+        @Override
+        public void encode(Object o, Type type, RequestTemplate requestTemplate) throws EncodeException {
+            Map<String, String> form = (Map<String, String>) o;
+            StringBuilder builder = new StringBuilder();
+            form.forEach((key, value) -> {
+                builder.append(key + "=" + value + "&");
+            });
 
-			requestTemplate.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
-			requestTemplate.body(builder.toString());
-		}
-	}
+            requestTemplate.header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
+            requestTemplate.body(builder.toString());
+        }
+    }
 
 }

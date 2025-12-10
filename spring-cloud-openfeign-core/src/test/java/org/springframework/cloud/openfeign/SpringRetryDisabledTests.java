@@ -17,27 +17,26 @@
 
 package org.springframework.cloud.openfeign;
 
-import java.util.Map;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration;
+import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
+import org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration;
 import org.springframework.cloud.openfeign.ribbon.CachingSpringLoadBalancerFactory;
 import org.springframework.cloud.openfeign.ribbon.FeignLoadBalancer;
 import org.springframework.cloud.openfeign.ribbon.FeignRibbonClientAutoConfiguration;
 import org.springframework.cloud.openfeign.ribbon.RetryableFeignLoadBalancer;
-import org.springframework.cloud.netflix.ribbon.RibbonAutoConfiguration;
-import org.springframework.cloud.netflix.ribbon.RibbonClientConfiguration;
 import org.springframework.cloud.test.ClassPathExclusions;
 import org.springframework.cloud.test.ModifiedClassPathRunner;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.util.Map;
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.*;
 import static org.hamcrest.core.Is.is;
 
 /**
@@ -47,28 +46,28 @@ import static org.hamcrest.core.Is.is;
 @ClassPathExclusions({"spring-retry-*.jar", "spring-boot-starter-aop-*.jar"})
 public class SpringRetryDisabledTests {
 
-	private ConfigurableApplicationContext context;
+    private ConfigurableApplicationContext context;
 
-	@Before
-	public void setUp() {
-		context = new SpringApplicationBuilder().web(false)
-				.sources(RibbonAutoConfiguration.class, LoadBalancerAutoConfiguration.class, RibbonClientConfiguration.class,
-						FeignRibbonClientAutoConfiguration.class).run();
-	}
+    @Before
+    public void setUp() {
+        context = new SpringApplicationBuilder().web(false)
+                .sources(RibbonAutoConfiguration.class, LoadBalancerAutoConfiguration.class, RibbonClientConfiguration.class,
+                        FeignRibbonClientAutoConfiguration.class).run();
+    }
 
-	@After
-	public void tearDown() {
-		if(context != null) {
-			context.close();
-		}
-	}
+    @After
+    public void tearDown() {
+        if (context != null) {
+            context.close();
+        }
+    }
 
-	@Test
-	public void testLoadBalancedRetryFactoryBean() throws Exception {
-		Map<String, CachingSpringLoadBalancerFactory> lbFactorys =  context.getBeansOfType(CachingSpringLoadBalancerFactory.class);
-		assertThat(lbFactorys.values(), hasSize(1));
-		FeignLoadBalancer lb =lbFactorys.values().iterator().next().create("foo");
-		assertThat(lb, instanceOf(FeignLoadBalancer.class));
-		assertThat(lb, is(not(instanceOf(RetryableFeignLoadBalancer.class))));
-	}
+    @Test
+    public void testLoadBalancedRetryFactoryBean() throws Exception {
+        Map<String, CachingSpringLoadBalancerFactory> lbFactorys = context.getBeansOfType(CachingSpringLoadBalancerFactory.class);
+        assertThat(lbFactorys.values(), hasSize(1));
+        FeignLoadBalancer lb = lbFactorys.values().iterator().next().create("foo");
+        assertThat(lb, instanceOf(FeignLoadBalancer.class));
+        assertThat(lb, is(not(instanceOf(RetryableFeignLoadBalancer.class))));
+    }
 }
